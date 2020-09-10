@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Salesio_V2</title>
+    <link rel="stylesheet" type="text/css" href="index.css">
+
+    <!--jQueryの読み込み-->
+    <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+    <link href="https://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- モーダル出す用のなにか -->
+    <div id="global_container"></div>
+
+    <!--main disp  -->
+    <div id="map_container">
+        <div class="map">
+            <p>プロット部</p>
+            <div id="plot_container" class="map_element"></div>
+        </div>
+        <div class="map">
+            <p>トライアル部</p>
+            <div id="trial_container" class="map_element"></div>
+        </div>
+    </div>
+    <div id="interaction_part">
+        <p>インタラクション部</p>
+
+        <!-- 最終状態の属性と属性値（スロット）を決めるフォーム -->
+        <p id="setting_final_attribute" v-if="display">{{theme_conclusion}}はなにがどうなること？<br>
+            <input type="text" id="final_attribute" placeholder="お金" v-model="attribute">が
+            <input type="text" id="final_value" placeholder="潤沢" v-model="value">なこと
+            <button v-on:click="ok">OK</button>　
+        </p>
+
+        <!-- 最終状態のスロットを表現するキャラクターを決めるフォーム -->
+        <p id="setting_final_state_character" v-if="display">{{attribute}}が{{value}}になるのは誰？<br>
+            <input type="text" placeholder="主人公" v-model="character"><br>
+            <button v-on:click="ok">OK</button>　
+        </p>
+        <!-- 登場人物の感情を決めるフォーム？-->
+        <div id="emotional_setting" v-if="display">
+            <!-- 選択した感情曲線を表示するエリア -->
+            <div id="selected_story_arc">
+                <img v-bind:src="story_arc_src[story_arc]">
+            </div>
+
+
+
+            <!-- 一人分 -->
+            <template v-for="c in characters">
+                <input type="text" placeholder="名前" v-model="c.name">
+                <!-- 感情のセレクト・うまいことして省力化したい -->
+                <select v-model="c.introduction">
+                    <option value="" style="display: none;">起の感情</option>
+                    <option v-for="(basic,name) in emotions.basics" v-bind:value="name">{{basic.jp_name}}（{{name}}）
+                    </option>
+                    <option v-for="(dyads,name) in emotions.dyads" v-bind:value="name">{{dyads.jp_name}}（{{name}}）
+                    </option>
+                </select>
+                <select v-model="c.development">
+
+                    <option value="" style="display: none;">承の感情</option>
+                    <option v-for="(basic,name) in emotions.basics" v-bind:value="name">{{basic.jp_name}}（{{name}}）
+                    </option>
+                    <option v-for="(dyads,name) in emotions.dyads" v-bind:value="name">{{dyads.jp_name}}（{{name}}）
+                    </option>
+                </select>
+                <select v-model="c.turn">
+
+                    <option value="" style="display: none;">転の感情</option>
+                    <option v-for="(basic,name) in emotions.basics" v-bind:value="name">{{basic.jp_name}}（{{name}}）
+                    </option>
+                    <option v-for="(dyads,name) in emotions.dyads" v-bind:value="name">{{dyads.jp_name}}（{{name}}）
+                    </option>
+                </select>
+
+                <select v-model="c.conclusion">
+                    <option value="" style="display: none;">結の感情</option>
+                    <option v-for="(basic,name) in emotions.basics" v-bind:value="name">{{basic.jp_name}}（{{name}}）
+                    </option>
+                    <option v-for="(dyads,name) in emotions.dyads" v-bind:value="name">{{dyads.jp_name}}（{{name}}）
+                    </option>
+                </select>
+                <input type="radio" name="empathized" v-model="empathized" v-bind:value="c.name">
+                <!-- 感情移入する登場人物を選択するラジオボタン -->
+                <button @click="del_character(c.id)">登場人物削除</button>
+                <br>
+            </template>
+
+            <button @click="check_emotion">感情チェック</button>
+            <button @click="add_character">キャラ追加</button>
+
+            <button @click="ok">感情設定おわり</button>
+
+        </div>
+
+        <div id="give_questions" v-if="display">
+            <template v-for="(c,name) in questions_and_methods">
+                <button v-if="c.display" @click='question_button_click(name)'>{{c.question}}</button>
+            </template>
+
+            <div id="when" v-if="showing_form=='when'">
+                {{questions_and_methods.when.question}}<br>
+                <input type="text" v-model="inputs_data.single">のこと
+            </div>
+            <div id="where" v-if="showing_form=='where'">
+                {{questions_and_methods.where.question}}
+                <input type="text" v-model="inputs_data.single">のこと
+            </div>
+            <div id="other_chara" v-if="showing_form=='other_chara'">
+                {{questions_and_methods.other_chara.question}}
+                <input type="text" v-model="inputs_data.single">
+            </div>
+            <div id="other_onject" v-if="showing_form=='other_onject'">
+                {{questions_and_methods.other_onject.question}}
+                <input type="text" v-model="inputs_data.single">
+
+            </div>
+            <div id="what_state" v-if="showing_form=='what_state'">
+                {{questions_and_methods.what_state.question}}
+                <input type="text" v-model="inputs_data.triple[0]">の
+                <input type="text" v-model="inputs_data.triple[1]">が
+                <input type="text" v-model="inputs_data.triple[2]">である。
+
+            </div>
+            <div id="then_what" v-if="showing_form=='then_what'">
+                {{questions_and_methods.then_what.question}}
+                <input type="text" v-model="inputs_data.triple[0]">の
+                <input type="text" v-model="inputs_data.triple[1]">が
+                <input type="text" v-model="inputs_data.triple[2]">になる。
+            </div>
+            <div id="why_previous" v-if="showing_form=='why_previous'">
+                {{questions_and_methods.why_previous.question}}
+                <input type="text" v-model="inputs_data.triple[0]">の
+                <input type="text" v-model="inputs_data.triple[1]">が
+                <input type="text" v-model="inputs_data.triple[2]">になる。
+            </div>
+            <div id="next_event" v-if="showing_form=='next_event'">
+                {{questions_and_methods.next_event.question}}
+                <input type="text" v-model="inputs_data.single">
+
+            </div>
+            <div id="previous_event" v-if="showing_form=='previous_event'">
+                {{questions_and_methods.previous_event.question}}
+                <input type="text" v-model="inputs_data.single">
+
+            </div>
+            <div>
+                <button id="question_ok" v-if="showing_form!='none'" @click="answering">OK</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- モーダルのテンプレート -->
+    <template id="global_setting">
+        <div class="modal-background">
+            <div id="modal-content">
+                <p>さぁこれから小説を作りましょう</p>
+                <h2>Theme</h2>
+                <p>
+                    <input type="text" id="theme_condition" placeholder="楽器を演奏">すると<br>
+                    <input type="text" id="theme_conclusion" placeholder="お金持ちに">なる　
+                </p>
+
+                <!-- <h2>読者モデル</h2> -->
+                <!-- <p>目指す物語のパターンを選んでください！</p> -->
+                <h2>Reader model:読者モデル</h2>
+
+
+                <p>Please select your novel's story arc (reader model)</p>
+                <p>物語の進行に合わせた感情起伏のパターンから読者が好みそうなものを選択しましょう</p>
+                <select id="curve_select" @change="change" value="selected" size="1">
+                    <!--            <option value="1">1上昇型</option>-->
+                    <!--            <option value="2">2下降型</option>-->
+                    <!--            <option value="3">3上昇下降型</option>-->
+                    <!--            <option value="4">4下降上昇型</option>-->
+                    <!--            <option value="5">5下降上昇下降型</option>-->
+                    <!--            <option value="6">6上昇下降上昇型</option>-->
+                    <option value="1">1 Up-up-up</option>
+                    <option value="2">2 Down-down-down</option>
+                    <option value="3">3 Up-to-Down</option>
+                    <option value="4">4 Down-to-Up</option>
+                    <option value="5">5 Down-Up-Down</option>
+                    <option value="6">6 Up-Down-Up</option>
+                    <!--<option value="7">7ジグザク1</option>-->
+                    <!--<option value="8">8ジグザグ2</option>-->
+                </select>
+                <!--<div id="plot_curve" class="plot_curve"></div>-->
+                <div>
+                    <canvas height="300px" id="chart_demo" width="500px"></canvas>
+                    <!--            <p>★感情外化診断結果★</p>-->
+                </div>
+
+                <button id="global_ok" v-on:click="start">はじめる</button>
+            </div>
+        </div>
+    </template>
+    <!-- 　ここまでモーダルのテンプレ -->
+    <!-- ここからインタラクション部のテンプレ入れておけば良いのでは？ -->
+
+
+    <!-- ノード作成時のモーダル -->
+    <dialog id="add_node">
+        <p>どのノードを作成しますか？</p>
+        <button value="event" onclick="this.parentNode.close()">イベント</button>
+        <button value="state" onclick="this.parentNode.close()">状態</button>
+    </dialog>
+
+    <dialog id="new_event">
+        <p>イベントの内容</p>
+        <input type="text" v-model="content">
+        <button @click="ok_click">OK</button>
+    </dialog>
+
+    <dialog id="new_state">
+        <p>状態の内容</p>
+        <p>時間</p>
+        <input type="text" v-model="time">
+        <p>場所</p>
+        <input type="text" v-model="place">
+        <!-- オブジェクトの数だけ回る -->
+        <div v-for="key in Object.keys(objects)">
+            <input type="text">
+            <!-- 属性の数だけ回る -->
+            <div v-for="(attribute,key,index) in Object.keys(objects[key])">
+                <input type="text" placeholder="属性">:
+                <input type="text" placeholder="値">
+            </div>
+            <button @click="add_attribute(key)">属性追加</button>
+        </div>
+        <button @click="add_object">オブジェクト追加</button>
+
+        <button @click="ok_click">OK</button>
+    </dialog>
+
+    <!-- JSの読み込みなど -->
+
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+    <!--グラフのライブラリの読み込み-->
+    <!--<script src="https://unpkg.com/frappe-charts@1.1.0"></script>&lt;!&ndash;&ndash;&gt;-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+
+    <script src="main.js"></script>
+
+</body>
+
+</html>

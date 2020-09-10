@@ -1,0 +1,75 @@
+
+  /* // モーダルの背景 */
+  .modal-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.3);
+  }
+  /* // モーダルウィンドウ */
+  #modal-content {
+    position: fixed;
+    width: 500px;
+    padding: 1.5em;
+    background: #FFF;
+    border-radius: 10px;
+    text-align: center;
+
+
+    h2 {
+      margin: 0;
+      font-size: 1.2em;
+    }
+  }
+
+  #map_container{
+    display: flex;
+    flex-direction: row;
+    height: 500px;
+  }
+  .map{
+    display: flex;
+    flex:1;
+    flex-direction: column;
+
+    border: 1px solid lightgray;
+
+
+  }
+  // .map p{
+  //   flex: 1;
+  // }
+
+  .map_element{
+    flex:1;
+    min-height: 0;
+  }
+
+  // #plot_container {
+  // flex:1;
+
+  //   border: 1px solid lightgray;
+  // }
+  //   #trial_container {
+  //     flex:1;
+
+  //     border: 1px solid lightgray;
+  
+
+  // }
+
+  
+
+
+#interaction_part{
+
+  height: 500px;
+
+  border: 1px solid lightblue;
+}
+
