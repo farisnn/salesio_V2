@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <meta charset="utf-8"/>
     <title>Salesio_V2</title>
     <link rel="stylesheet" type="text/css" href="index.css">
 
@@ -45,9 +46,11 @@
         <!-- 登場人物の感情を決めるフォーム？-->
         <div id="emotional_setting" v-if="display">
             <!-- 選択した感情曲線を表示するエリア -->
+            <p>物語の登場人物の感情を決めていこう</p>
             <div id="selected_story_arc">
                 <img v-bind:src="story_arc_src[story_arc]">
             </div>
+            <p></p>
 
 
 
@@ -95,15 +98,36 @@
             <button @click="check_emotion">感情チェック</button>
             <button @click="add_character">キャラ追加</button>
 
-            <button @click="ok">感情設定おわり</button>
+            <button @click="ok" v-if="next_step_check">感情設定おわり</button>
 
         </div>
 
-        <div id="give_questions" v-if="display">
-            <template v-for="(c,name) in questions_and_methods">
-                <button v-if="c.display" @click='question_button_click(name)'>{{c.question}}</button>
-            </template>
+        質問モード<input type="checkbox" id="edit_type" v-model="mode" @change="chan" >
 
+
+
+        <div id="edit_state" v-if="display&&!mode&&!(current_data===undefined)">
+            <!--質問によらず状態を形成するところ-->
+            <div id="editor" v-for="(c,object_name) in current_data.objects">
+                <input type="text" class="edit_object" v-bind:value="object_name" placeholder="オブジェクト名">
+                <button @click="del_object(c)">オブジェクト削除</button>
+                <br>
+                <div id="edit_attr" v-for="(v,attr_name) in current_data.objects[object_name]">
+                    <input type="text" class="edit_attribute" v-bind:value="attr_name" placeholder="属性">
+                    <input type="text" class="edit_value" v-bind:value="v" placeholder="値">
+                    <button @click="del_attribute(c,v)">属性・属性値削除</button>
+                </div>
+                <button @click="add_attribute(c)">属性・属性値追加</button>
+            </div>
+            <button @click="add_object">オブジェクト追加</button><br />
+            <button @click="update">更新</button>
+        </div>
+
+
+        <div id="give_questions" v-if="display&&mode">
+                    <template v-for="(c,name) in questions_and_methods">
+                    <button v-if="c.display" @click='question_button_click(name)'>{{c.question}}</button>
+                    </template>
             <div id="when" v-if="showing_form=='when'">
                 {{questions_and_methods.when.question}}<br>
                 <input type="text" v-model="inputs_data.single">のこと
@@ -153,6 +177,29 @@
             <div>
                 <button id="question_ok" v-if="showing_form!='none'" @click="answering">OK</button>
             </div>
+        </div>
+        <div id="plot_extraction" v-if="display">
+
+            <select v-model="select_section">
+                <option value="0">起まで</option>
+                <option value="1">起から承</option>
+                <option value="2">承から転</option>
+                <option value="3">転から結</option>
+            </select>
+
+            <button @click="extract_click">{{switched_button_message}}</button>
+            <button @click="plot_delete">部分プロット削除</button>
+
+            <button @click="previous_route">＜</button>
+            <button @click="next_route">＞</button>
+            <button @click="route_select">ルート決定</button>
+
+
+        </div>
+
+        <div class="log_button">
+            <button onclick="log_save()">ログデータ保存</button>
+
         </div>
 
     </div>

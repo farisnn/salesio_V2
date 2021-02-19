@@ -1,11 +1,3 @@
-//グルーバル設定の構造体
-class Global_setting {
-    constructor(cond, conc, reder) {
-        this.theme_condition = cond;
-        this.theme_conclusion = conc;
-        this.reader_type = reder;
-    }
-}
 //感情語群
 const all_emotions = {
     "basics": {
@@ -162,9 +154,44 @@ const all_emotions = {
 const positive_emotions_relations = getCsv("test_rule_count_positive_th5.csv");
 const negative_emotions_relations = getCsv("test_rule_count_negative_th5.csv");
 
+//ログ用クラス
+class Log{
+    constructor() {
+        this.log_data=[];
+    }
 
+    add_log(comment){
+        //現状のログを整形する。
+        let added_log={};
+        //現在秒の取得とログデータへの格納
+        added_log.time =　Math.floor((new Date()).getTime() / 1000);
+        //初期設定データの格納
+        added_log.global_setting = global_setting;
+        //登場人物データの格納
+        added_log.characters_setting = emotional_setting.characters;
 
+        //マップデータの格納
+        added_log.plot_nodes=nodes_of_plot.get();
+        added_log.plot_edges=edges_of_plot.get();
 
+        added_log.trial_nodes = nodes_of_trial.get();
+        added_log.trial_edgs = edges_of_trial.get();
+
+        //コメントデータの追加
+        added_log.comment = comment;
+
+        this.log_data.push(added_log);
+    }
+}
+
+//グルーバル設定の構造体
+class Global_setting {
+    constructor(cond, conc, reder) {
+        this.theme_condition = cond;
+        this.theme_conclusion = conc;
+        this.reader_type = reder;
+    }
+}
 
 class State {
     constructor(name) {
@@ -175,8 +202,9 @@ class State {
         this.type = 'state';
         this.group = 'state';
     }
+
     generate_text() {
-        let obj_text = (this.name === undefined ? '' : this.name) + '\n時間:' + (this.time === undefined ? '未定義' : this.time) + '\n場所:' + (this.place == undefined ? '未定義' : this.place);
+        let obj_text = (this.name === undefined ? '' : this.name) + '\n時間:' + (this.time === undefined ? '未定義' : this.time) + '\n場所:' + (this.place === undefined ? '未定義' : this.place);
         let key_array = Object.keys(this.objects);
         for (let i = 0; i < key_array.length; i++) {
             obj_text += '\n' + key_array[i];
@@ -219,9 +247,11 @@ class Event {
         this.content = undefined;
         this.group = 'event';
     }
+
     generate_text() {
         return (this.content);
     }
+
     static generate_texts(instance) {
         return (instance.content);
     }
@@ -233,6 +263,7 @@ class Scene extends State {
         this.condition_types = ['同じスロットを持つ', 'ゴール状態となる', '包含関係になる']
         this.condition = undefined;
     }
+
     generate_text() {
         if (this.condition == undefined)
             return undefined;
@@ -242,6 +273,10 @@ class Scene extends State {
     }
 }
 
+//prepare log data
+
+let log_data = new Log();
+
 //プロット部の初期設定
 var nodes_of_plot = new vis.DataSet([{
     id: 1,
@@ -249,30 +284,30 @@ var nodes_of_plot = new vis.DataSet([{
     level: 0,
     type: 'theme'
 },
-{
-    id: 2,
-    label: 'Introduction',
-    level: 1,
-    type: 'Basic_structure'
-},
-{
-    id: 3,
-    label: 'Development',
-    level: 1,
-    type: 'Basic_structure'
-},
-{
-    id: 4,
-    label: 'Turn',
-    level: 1,
-    type: 'Basic_structure'
-},
-{
-    id: 5,
-    label: 'Conclusion',
-    level: 1,
-    type: 'Basic_structure'
-}
+    {
+        id: 2,
+        label: 'Introduction',
+        level: 1,
+        type: 'Basic_structure'
+    },
+    {
+        id: 3,
+        label: 'Development',
+        level: 1,
+        type: 'Basic_structure'
+    },
+    {
+        id: 4,
+        label: 'Turn',
+        level: 1,
+        type: 'Basic_structure'
+    },
+    {
+        id: 5,
+        label: 'Conclusion',
+        level: 1,
+        type: 'Basic_structure'
+    }
 ]);
 
 // create an array with edges
@@ -280,18 +315,18 @@ var edges_of_plot = new vis.DataSet([{
     from: 1,
     to: 3
 },
-{
-    from: 1,
-    to: 2
-},
-{
-    from: 1,
-    to: 4
-},
-{
-    from: 1,
-    to: 5
-},
+    {
+        from: 1,
+        to: 2
+    },
+    {
+        from: 1,
+        to: 4
+    },
+    {
+        from: 1,
+        to: 5
+    },
 ]);
 
 // create a network
@@ -322,8 +357,8 @@ var nodes_of_trial = new vis.DataSet([
 
 // create an array with edges
 var edges_of_trial = new vis.DataSet([{
-    from: 1,
-    to: 3
+    // from: 1,
+    // to: 3
 },
 
 ]);
@@ -377,8 +412,7 @@ var trial_options = {
                 new_node = new Event(undefined)
                 document.getElementById('new_event').showModal();
                 return;
-            }
-            else {
+            } else {
                 new_node = new State(undefined);
                 // document.getElementById('new_state').showModal();
             }
@@ -387,6 +421,35 @@ var trial_options = {
             new_node.y = nodedata.y;
             new_node.label = new_node.generate_text();
             callback(new_node);
+
+        },
+        deleteNode:function (nodedata, callback){
+            //消せないノードが選択されてた時ははねる。
+            let selected_nodes_data = nodes_of_trial.get(nodedata.nodes);
+            for(let i=0;i<selected_nodes_data.length;i++){
+                if(selected_nodes_data[i].name==='introduction') {
+                    callback();
+                    return ;
+                }
+                if(selected_nodes_data[i].name==='development') {
+                    callback();
+                    return ;
+                }
+                if(selected_nodes_data[i].name==='turn') {
+                    callback();
+                    return ;
+                }
+                if(selected_nodes_data[i].name==='conclusion') {
+                    callback();
+                    return ;
+                }
+                if(selected_nodes_data[i].name==='テーマの条件部') {
+                    callback();
+                    return ;
+                }
+            }
+            //上の条件を全部スルーできたらとりあえず普通にコールバック呼んでおく
+            callback(nodedata);
 
         }
     }
@@ -454,7 +517,6 @@ const activateTemplate = () => {
     });
 
 
-
     let global_setting_curve = new Vue({
         el: '#curve_select',
         data: {},
@@ -473,21 +535,20 @@ const activateTemplate = () => {
     })
 
 
-
     let global_setting_ok = new Vue({
         el: '#global_ok',
         data: {},
         methods: {
             start: function () {
-                
+
                 plot_tree = new vis.Network(plot_container, plot, plot_options);
                 trial_map = new vis.Network(trial_container, trial_data, trial_options);
                 trial_map.on('selectNode', function (params) {
-                    console.log('fired');
+                    console.log('Select_fired');
                     //トライアルマップでノードが選択された時にする動作
                     // どの質問ボタンを表示するか
-                    let seleted_nodeid = params.nodes[0];
-                    let item = nodes_of_trial.get(seleted_nodeid);
+                    let selected_nodeid = params.nodes[0];
+                    let item = nodes_of_trial.get(selected_nodeid);
                     if (item.type == 'event') {
                         let questions = Object.keys(give_qiestions.questions_and_methods);
                         for (let i = 0; i < questions.length; i++) {
@@ -497,30 +558,44 @@ const activateTemplate = () => {
                         give_qiestions.questions_and_methods.why_previous.display = true;
 
                     } else if (item.type == 'state') {
+                        //どの質問項目を有効化、無効化するのか
                         let questions = Object.keys(give_qiestions.questions_and_methods);
                         for (let i = 0; i < questions.length; i++) {
                             give_qiestions.questions_and_methods[questions[i]].display = false;
                         }
-                        give_qiestions.questions_and_methods.when.display = true;
-                        give_qiestions.questions_and_methods.where.display = true;
-                        give_qiestions.questions_and_methods.other_chara.display = true;
-                        give_qiestions.questions_and_methods.other_onject.display = true;
-                        give_qiestions.questions_and_methods.what_state.display = true;
+                        //ノードが起承転結のどれかに応じて表示する質問を変更
+
                         give_qiestions.questions_and_methods.next_event.display = true;
                         give_qiestions.questions_and_methods.previous_event.display = true;
 
+                        if (item.name==='introduction'||item.name==='development'||item.name==='turn'||item.name==='conclusion'){
+                            state_editor.current_data = undefined;
+                        }
+                        else{
+                            //編集不可ではないノードを選択したときは、ノードの中身を変更できるようにする。
+                            give_qiestions.questions_and_methods.when.display = true;
+                            give_qiestions.questions_and_methods.where.display = true;
+                            give_qiestions.questions_and_methods.other_chara.display = true;
+                            give_qiestions.questions_and_methods.other_onject.display = true;
+                            give_qiestions.questions_and_methods.what_state.display = true;
+                            //質問によらずに直接編集する画面に内容を放り込む
+                            state_editor.current_data = item;
+                        }
                     }
 
                 });
                 // トライアルでノード選択が解除された時に走るイベント（全部の選択肢と回答フォームを非表示に）
-                trial_map.on("deselectNode", function () {
-                    let questions = Object.keys(give_qiestions.questions_and_methods);
-                    for (let i = 0; i < questions.length; i++) {
-                        give_qiestions.questions_and_methods[questions[i]].display = false;
+                trial_map.on('click', function (params) {
+                    if(params.nodes.length===0) {
+                        console.log('fire_no');
+                        let questions = Object.keys(give_qiestions.questions_and_methods);
+                        for (let i = 0; i < questions.length; i++) {
+                            give_qiestions.questions_and_methods[questions[i]].display = false;
+                        }
+                        give_qiestions.showing_form = 'none';
                     }
-                    give_qiestions.showing_form = 'none';
+                    //params.event(params);
                 });
-
 
 
                 //入力された初期設定を基にオブジェクト造って、最初の質問をする。
@@ -531,7 +606,7 @@ const activateTemplate = () => {
                 global_setting = new Global_setting(condition_theme, theme_conclusion, num);
                 setting_final_attribute.theme_conclusion = global_setting.theme_conclusion;
                 emotional_setting.story_arc = num - 1;
-                
+
                 // プロット部のルートノードの更新
                 nodes_of_plot.update(
                     {
@@ -546,6 +621,11 @@ const activateTemplate = () => {
                 $('.modal-content').hide();
                 $('.modal-background').hide();
                 setting_final_attribute['display'] = true;
+
+                //add_log
+
+                log_data.add_log("グローバルセッティングが設定されました。");
+                // console.log(log_data);
 
             }
         }
@@ -572,6 +652,11 @@ let setting_final_attribute = new Vue({
             setting_final_state_character.attribute = this.attribute;
             setting_final_state_character.value = this.value;
             setting_final_state_character.display = true;
+
+            //ログデータの追加
+            log_data.add_log("最終状態が設定されました");
+            // console.log(log_data);
+
 
         }
     }
@@ -604,6 +689,10 @@ let setting_final_state_character = new Vue({
 
             emotional_setting.display = true;
 
+            //ログデータの追加
+            log_data.add_log("テーマを表現する登場人物が設定されました");
+            // console.log(log_data);
+
         }
     }
 });
@@ -628,6 +717,30 @@ let emotional_setting = new Vue({
 
         }
     },
+    computed: {
+        next_step_check: function () {
+            //ここOKボタンをアクティブにするかどうかをチェックする。
+
+            for (let i = 0; i < this.characters.length; i++) {
+                if (this.characters[i].introduction === '')
+                    return false
+                else if (this.characters[i].development === '')
+                    return false
+                else if (this.characters[i].turn === '')
+                    return false
+                else if (this.characters[i].conclusion === '')
+                    return false
+                else if (this.characters[i].name === '')
+                    return false
+            }
+
+            if (this.empathized === undefined)
+                return false
+
+            return true
+        }
+    },
+
     methods: {
         add_character: function () {
             this.characters.push({
@@ -650,8 +763,6 @@ let emotional_setting = new Vue({
         check_emotion: function () {
             //感情のフィードバック生成するコールバック
             generate_emotion_feedback();
-
-
         },
         ok: function () {
             //ここで初期状態（発想部の）を作る？
@@ -664,7 +775,6 @@ let emotional_setting = new Vue({
 
             // 新しいアレを作成
             for (let i = 0; i < 4; i++) {
-
                 let section;
                 switch (i) {
                     case 0:
@@ -726,15 +836,90 @@ let emotional_setting = new Vue({
             //最終状態ノードの追加
             this.display = false;
             give_qiestions.display = true;
+            state_editor.display=true;
+            plot_extraction.display = true;
+
+            //ログデータの追加
+            log_data.add_log("登場人物の感情が設定されました");
+            // console.log(log_data);
+
         }
     }
 });
+
+
+let edit_mode = new Vue({
+    el:"#edit_type",
+    data:function () {
+      return{
+          mode:false        //一応質問モードをONにする時にtrueで
+      }
+    },
+    methods:{
+        chan:function () {
+
+            give_qiestions.mode=this.mode;
+            state_editor.mode=this.mode;
+        }
+    }
+});
+
+let state_editor = new Vue({
+    el:'#edit_state',
+    data:function (){
+        return{
+            display:false,
+            mode:false,
+            current_data:{
+               // これはサンプルデータ
+                // objects:{
+                //         "主人公":{
+                //             "性別":"男",
+                //             "年齢":"大学生"
+                //         },
+                //     "heroin": {
+                //         "age": "teen",
+                //         "sex": "female"
+                //     }
+                // }
+            }//selectedのときに状態なら入れるようにしてみた。どうなるかなぁ……
+        }
+    },
+    methods:{
+        add_object:function () {
+            this.current_data.objects[""]="";
+        },
+        del_object:function (obj) {
+            delete this.current_data.objects[obj];
+        },
+        add_attribute:function(obj) {
+            this.current_data.objects[obj][""] = "";
+        },
+        del_attribute:function (obj,attr) {
+            delete this.current_data.objects[obj][attr];
+        },
+
+        update:function () {
+            //ノードの更新をどうにかする関数。たぶんここに入ってるcurrent_dataを用いてtiral_nodesをアップデートすれば行けるはず。たぶん。
+            this.current_data.label = this.current_data.generate_text();
+
+            nodes_of_trial.update(this.current_data);
+
+            log_data.add_log("状態ノードを更新しました");
+
+        }
+    }
+
+});
+
+
 
 let give_qiestions = new Vue({
     el: '#give_questions',
     data: function () {
         return {
             display: false,
+            mode:false,
             questions_and_methods: {
                 when: {
                     question: 'いつのこと？',
@@ -807,6 +992,12 @@ let give_qiestions = new Vue({
             }
         }
     },
+    // computed: {
+    //   show_question:function (){
+    //       return trial_map.getSelectedNodes() !== [];
+    //   }
+    //
+    // },
     methods: {
         question_button_click: function (name) {
             this.showing_form = name
@@ -827,8 +1018,7 @@ let give_qiestions = new Vue({
                     new_node.content = this.inputs_data.single;
                     new_node.label = this.inputs_data.single;
                     new_node = nodes_of_trial.add(new_node);
-                }
-                else {
+                } else {
                     new_node = new State(undefined);
                     new_node.objects[this.inputs_data.triple[0]] = {};
                     new_node.objects[this.inputs_data.triple[0]][this.inputs_data.triple[1]] = this.inputs_data.triple[2];
@@ -850,8 +1040,7 @@ let give_qiestions = new Vue({
                         from: new_node[0],
                         to: nodes[0]
                     });
-            }
-            else {
+            } else {
                 // 既存のノードのアップデート
                 //アップデートした同じIDの情報を用意する
                 switch (this.showing_form) {
@@ -877,24 +1066,22 @@ let give_qiestions = new Vue({
                             }
                         break;
                 }
-
                 console.log(update_node);
                 if (update_node.type == 'state')
                     update_node.label = State.generate_texts(update_node);
                 else
-                update_node.label = Event.generate_texts(update_node);
+                    update_node.label = Event.generate_texts(update_node);
                 nodes_of_trial.update(update_node);
-                
             }
-            this.inputs_data.single='';
-            this.inputs_data.triple= ['', '', ''];
+            this.inputs_data.single = '';
+            this.inputs_data.triple = ['', '', ''];
 
-
+            //ログデータの追加
+            log_data.add_log("質問に回答しました")
+            // console.log(log_data);
         },
-
     }
 });
-
 
 // ちょっとしたテスト
 let add_new_event = new Vue({
@@ -911,11 +1098,338 @@ let add_new_event = new Vue({
             add_node.label = add_node.generate_text();
             nodes_of_trial.add(add_node);
             document.getElementById('new_event').close();
-            this.content='';
+            this.content = '';
         }
     }
 
 });
+
+let plot_extraction = new Vue({
+    el: '#plot_extraction',
+    data: function () {
+        return ({
+            extract_mode: false,
+            routes_ids: [],
+            detailed_routes: [],
+            current_route: 0,
+            select_section: undefined,
+            current_trial_nodes: undefined,
+            switched_button_message: 'プロット抽出',
+            display: false
+        })
+    },
+    methods: {
+        extract_click: function () {
+
+            if (this.extract_mode) {
+                this.extract_mode = false;
+                give_qiestions.display = true;
+                state_editor.display=true;
+                nodes_of_trial.update(this.current_trial_nodes.get());
+                this.switched_button_message = 'プロット抽出モード';
+                //ログデータの追加
+                log_data.add_log("プロット抽出モードが終了");
+                // console.log(log_data);
+
+                //質問ボタンの非表示化と抽出関連の表示
+                give_qiestions.display=true;
+                state_editor.display=true;
+
+                return
+            }
+
+            this.extract_mode = true;
+            give_qiestions.display = false;
+            state_editor.display=false;
+            this.switched_button_message = 'プロット抽出モード終わり'
+            this.current_trial_nodes = new vis.DataSet(nodes_of_trial.get());
+
+            //主人公の情報はここに入ってる
+            let chara_express_model;
+            let characters_data = emotional_setting.characters;
+            for (let i = 0; i < emotional_setting.characters.length; i++) {
+                if (characters_data[i].represent_theme === true) {
+                    chara_express_model = emotional_setting.characters[i];
+                }
+            }
+            //チェックポイントノードの検索
+            let intro = nodes_of_trial.get({
+                filter: function (item) {
+                    return (item.name === "introduction");
+                }
+            });
+            let develop = nodes_of_trial.get({
+                filter: function (item) {
+                    return (item.name === "development");
+                }
+            });
+            let turn = nodes_of_trial.get({
+                filter: function (item) {
+                    return (item.name === "turn");
+                }
+            });
+            let concl = nodes_of_trial.get({
+                filter: function (item) {
+                    return (item.name === "conclusion");
+                }
+            });
+
+            let expand_target = 0;
+            let child_candidates;
+            let start;
+            let goal;
+            let edge_white_tree = []
+            this.routes_ids = [];
+
+            let com;//ログのコメント保持用
+            //まず、イントロからデベロップメントを検索してみる
+            //セレクトボックスの内容から必要な部分を設定。
+            switch (this.select_section) {
+                case '0':
+                    //ここ、イントロまでの動作なんでちょっと変更する必要あり
+                    start = undefined;
+                    goal = intro[0];
+                    com = "introまで抽出"
+                    break;
+                case '1':
+                    start = intro[0];
+                    goal = develop[0];
+                    com = "developmentまで抽出"
+
+                    break;
+                case '2':
+                    start = develop[0];
+                    goal = turn[0];
+                    com = "turnまで抽出"
+                    break;
+                case '3':
+                    start = turn[0];
+                    goal = concl[0];
+                    com = "conclusionまで抽出"
+                    break;
+            }
+
+            if (this.select_section === '0') {
+                //イントロまでが選択された時
+                edge_white_tree.push({
+                    parent: undefined,
+                    node: goal.id
+                });
+
+                while (expand_target !== edge_white_tree.length) {
+                    child_candidates = edges_of_trial.get({
+                        filter: function (item) {
+                            return (item.to === edge_white_tree[expand_target].node)
+                        }
+                    });
+
+                    child_candidates.forEach(item => {
+                        let can_be_add = true;
+                        for (let checker = expand_target; checker !== 0; checker = edge_white_tree[checker].parent) {
+                            if (edge_white_tree[checker].node === item.from) {
+                                can_be_add = false;
+                            }
+                        }
+                        if (can_be_add) {
+                            edge_white_tree.push({
+                                parent: expand_target,
+                                node: item.from
+                            });
+                        }
+                    });
+                    expand_target++;
+                }
+
+                //    ここまででルート木が完成しているので、あとはなんとかする　
+
+                let leaf_nodes = edge_white_tree.filter(function (item, num) {
+                    let checker = edge_white_tree.find(item2 => item2.parent === num);
+                    return checker === undefined;
+                });
+
+                //葉ノードが抽出されたので、後は親を辿ってルートに突っ込む
+                for (let i = 0; i < leaf_nodes.length; i++) {
+                    let current_node = leaf_nodes[i];
+                    let target_index = leaf_nodes[i].parent;
+                    let route = [leaf_nodes[i].node];
+
+                    while (target_index !== undefined) {
+                        route.push(edge_white_tree[target_index].node);
+                        target_index = edge_white_tree[target_index].parent;
+                    }
+                    this.routes_ids.push(route);
+                }
+            } else {
+                //
+                // スタートをルートノードとして突っ込む(これは0番目の要素)
+                edge_white_tree.push({
+                    parent: undefined,
+                    node: start.id
+                })
+                while (expand_target != edge_white_tree.length) {
+
+                    // 展開して接続先を取得
+                    child_candidates = edges_of_trial.get({
+                        filter: function (item) {
+                            return (item.from == edge_white_tree[expand_target].node)
+                        }
+                    });
+                    child_candidates.forEach(item => {
+                        //ループチェック
+                        let can_be_add = true;
+                        for (let checker = expand_target; checker != 0; checker = edge_white_tree[checker].parent) {
+                            if (edge_white_tree[checker].node === item.to)
+                                can_be_add = false;
+                        }
+                        if (can_be_add) {
+                            //現時点では、ゴールノードに到達したか否かをチェックしてないので、順方向ループ無しでたどれる所全部辿って木に入れてるな、ルート取り出しの時に厳選してるけど、これマップが大きくなったらすごい事になりそう……
+                            edge_white_tree.push({
+                                parent: expand_target,
+                                node: item.to
+                            });
+                        }
+                    });
+                    expand_target++;
+                }
+                console.log(edge_white_tree);
+                let end_and_goal = edge_white_tree.filter(item => item.node === goal.id)
+                this.routes_ids = [];
+                end_and_goal.forEach(item => {
+                    let route = [item.node];
+                    let target_index = item.parent;
+                    while (target_index !== undefined) {
+                        route.push(edge_white_tree[target_index].node);
+                        target_index = edge_white_tree[target_index].parent;
+                    }
+                    //配列の順番がゴールからになってるから反転させる
+                    route.reverse();
+                    this.routes_ids.push(route);
+                    console.log(nodes_of_trial.get(route));
+                });
+
+
+                give_qiestions.display=false;
+                state_editor.display=false;
+                log_data.add_log(com);
+            }
+
+            this.route_preview();
+            //データの用意
+            // this.routes_ids.forEach(r =>{
+            //
+            //     r.forEach(node=>{
+            //         let detailed_node = nodes_of_trial.get(node);
+            //     })
+            // })
+
+
+        },
+        route_select: function () {
+            let added_node_ids = this.routes_ids[this.current_route];
+            let added_nodes = this.current_trial_nodes.get(added_node_ids);
+            let parent_node_id = undefined;
+
+            for (let i = 0; i < added_nodes.length; i++) {
+                added_nodes[i].level = 2;
+                //ここであと、高さの調整が必要かも……
+            }
+            //とりあえずノードを突っ込む
+            added_nodes.shift();
+            nodes_of_plot.add(added_nodes);
+
+            //親となるノードを探索
+            switch (this.select_section) {
+                case '0':
+                    parent_node_id = 2;
+                    break;
+                case '1':
+                    parent_node_id = 3;
+                    break;
+                case '2':
+                    parent_node_id = 4;
+
+                    break;
+                case '3':
+                    parent_node_id = 5;
+                    break;
+            }
+
+            //エッジを追加する
+            let add_edges = [];
+            for (let i = 0; i < added_node_ids.length; i++) {
+                add_edges.push({
+                    from: parent_node_id,
+                    to: added_node_ids[i],
+                });
+            }
+
+            edges_of_plot.add(add_edges);
+            log_data.add_log("プロット挿入");
+        },
+
+        /**
+         * 部分プロットを削除する機能
+         */
+        plot_delete: function (){
+            let parent_node_id=undefined;
+            switch (this.select_section) {
+                case '0':
+                    parent_node_id = 2;
+                    break;
+                case '1':
+                    parent_node_id = 3;
+                    break;
+                case '2':
+                    parent_node_id = 4;
+
+                    break;
+                case '3':
+                    parent_node_id = 5;
+                    break;
+            }
+
+            let deleted_edges = edges_of_plot.get({
+                filter:function (item) {
+                    return(item.from===parent_node_id);
+                }});
+            for(let i=0;i<deleted_edges.length;i++){
+                edges_of_plot.remove(deleted_edges[i].id);
+                nodes_of_plot.remove(deleted_edges[i].to);
+            }
+            log_data.add_log("部分プロット削除");
+
+        },
+        /**
+         *実際にルートを考える変数
+         */
+        route_preview: function () {
+
+            let preview_route = this.routes_ids[this.current_route];
+            let preview_nodes = this.current_trial_nodes.get(preview_route);
+            nodes_of_trial.clear();
+            nodes_of_trial.add(preview_nodes);
+        },
+        /**
+         * 前のルートを表示する奴
+         */
+        previous_route: function () {
+            if (this.current_route < this.routes_ids.length - 1) {
+                this.current_route++;
+            }
+            this.route_preview();
+        },
+        /**
+         * 次のルートを表示する奴
+         */
+        next_route: function () {
+            if (this.current_route > 0) {
+                this.current_route--;
+            }
+            this.route_preview();
+        }
+
+    }
+})
 
 
 // let add_new_state = new Vue({
@@ -951,7 +1465,6 @@ let add_new_event = new Vue({
 // });
 
 
-
 //感情を受け取って各区間の遷移を返す奴。
 function calc_emotional_up_down(intro, dev, turn, conc) {
 
@@ -981,10 +1494,8 @@ function generate_emotion_feedback() {
             emotional_up_down[i] = "up";
     }
 
-
     for (let i = 0; i < characters_data.length; i++) {
         let check_emotions = [characters_data[i].introduction, characters_data[i].development, characters_data[i].turn, characters_data[i].conclusion]
-
 
         for (let j = 0; j < 3; j++) {
             if (!characters_data[i].name === emotional_setting.empathized)
@@ -1007,7 +1518,6 @@ function generate_emotion_feedback() {
             else
                 before_jp = all_emotions.dyads[before].jp_name;
 
-
             //after側の日本語名を取ってくる
             matched_basic = all_emotions.basics.hasOwnProperty(after);
             if (matched_basic)
@@ -1021,7 +1531,6 @@ function generate_emotion_feedback() {
                 if (positive_emotions_relations[i][0] === after_jp)
                     after_group = "positive";
             }
-
 
             //そもそも見るべき表が違う場合（二分割のグループが違う）
             if (before_group !== after_group) {
@@ -1136,9 +1645,7 @@ function grad_emotion_value(before, after) {
 function check_part_of_plot() {
 
 
-
 }
-
 
 function emo_to_jpname(eng) {
     let matched_basic = false;
@@ -1148,17 +1655,16 @@ function emo_to_jpname(eng) {
         return (all_emotions.basics[eng].jp_name);
     else
         return (all_emotions.dyads[eng].jp_name);
-
-
 }
-
 
 // 適当にプロット部にぶち込む感じの奴作ってみる？
 function plot_insert() {
 
-
 }
 
+function plot_path_find() {
+
+}
 
 
 //CSV読み込む奴
@@ -1189,4 +1695,22 @@ function getCsv(url) {
     }
 
     return res;
+}
+
+
+
+function log_save() {
+    //データを取り出して格納（ノードとエッジに関する全てのデータは保存されている、はず……
+
+
+    let json_text = JSON.stringify(log_data.log_data, undefined, 4);
+    let blob = new Blob([json_text], {"type": "application/json"});
+    // window.URL = window.URL || window.webkitURL;
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    document.body.appendChild(a);
+    a.download='log_data.json';
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
 }
