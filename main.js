@@ -154,6 +154,77 @@ const all_emotions = {
 const positive_emotions_relations = getCsv("test_rule_count_positive_th5.csv");
 const negative_emotions_relations = getCsv("test_rule_count_negative_th5.csv");
 
+
+//プロット部の初期設定
+let nodes_of_plot = new vis.DataSet([{
+    id: 1,
+    label: 'Theme',
+    level: 0,
+    type: 'theme'
+},
+    {
+        id: 2,
+        label: 'Introduction',
+        level: 1,
+        type: 'Basic_structure'
+    },
+    {
+        id: 3,
+        label: 'Development',
+        level: 1,
+        type: 'Basic_structure'
+    },
+    {
+        id: 4,
+        label: 'Turn',
+        level: 1,
+        type: 'Basic_structure'
+    },
+    {
+        id: 5,
+        label: 'Conclusion',
+        level: 1,
+        type: 'Basic_structure'
+    }
+]);
+
+
+// create an array with edges
+let edges_of_plot = new vis.DataSet([{
+    from: 1,
+    to: 3
+},
+    {
+        from: 1,
+        to: 2
+    },
+    {
+        from: 1,
+        to: 4
+    },
+    {
+        from: 1,
+        to: 5
+    },
+]);
+
+
+//setting of trial map
+let nodes_of_trial = new vis.DataSet([
+    // { id: 1, label: 'イベント1\nなにがおこるか', level: 0, group: 'event', color: 'orange' },
+    // { id: 2, label: 'state1\n時間\n場所\nオブジェクト名\n属性1：属性値1\n属性2：属性値2', level: 1, group: 'state', color: 'lime' },
+    // { id: 3, label: 'state2', level: 1, group: 'state', color: 'lime' }
+]);
+
+
+// create an array with edges
+let edges_of_trial = new vis.DataSet([{
+    // from: 1,
+    // to: 3
+},
+
+]);
+
 //ログ用クラス
 class Log{
     constructor() {
@@ -222,7 +293,7 @@ class State {
     }
 
     static generate_texts(instance) {
-        let obj_text = (instance.name === undefined ? '' : instance.name) + '\n時間:' + (instance.time === undefined ? '未定義' : instance.time) + '\n場所:' + (instance.place == undefined ? '未定義' : instance.place);
+        let obj_text = (instance.name === undefined ? '' : instance.name) + '\n時間:' + (instance.time === undefined ? '未定義' : instance.time) + '\n場所:' + (instance.place === undefined ? '未定義' : instance.place);
         let key_array = Object.keys(instance.objects);
         for (let i = 0; i < key_array.length; i++) {
             obj_text += '\n' + key_array[i];
@@ -265,7 +336,7 @@ class Scene extends State {
     }
 
     generate_text() {
-        if (this.condition == undefined)
+        if (this.condition === undefined)
             return undefined;
         let label_text = '条件：' + this.condition_types[this.condition] === undefined ? '未定義' : this.condition_types[this.condition] + '\n';
         label_text += super.generate_text();
@@ -277,65 +348,13 @@ class Scene extends State {
 
 let log_data = new Log();
 
-//プロット部の初期設定
-var nodes_of_plot = new vis.DataSet([{
-    id: 1,
-    label: 'Theme',
-    level: 0,
-    type: 'theme'
-},
-    {
-        id: 2,
-        label: 'Introduction',
-        level: 1,
-        type: 'Basic_structure'
-    },
-    {
-        id: 3,
-        label: 'Development',
-        level: 1,
-        type: 'Basic_structure'
-    },
-    {
-        id: 4,
-        label: 'Turn',
-        level: 1,
-        type: 'Basic_structure'
-    },
-    {
-        id: 5,
-        label: 'Conclusion',
-        level: 1,
-        type: 'Basic_structure'
-    }
-]);
-
-// create an array with edges
-var edges_of_plot = new vis.DataSet([{
-    from: 1,
-    to: 3
-},
-    {
-        from: 1,
-        to: 2
-    },
-    {
-        from: 1,
-        to: 4
-    },
-    {
-        from: 1,
-        to: 5
-    },
-]);
-
 // create a network
-var plot_container = document.getElementById('plot_container');
-var plot = {
+let plot_container = document.getElementById('plot_container');
+let plot = {
     nodes: nodes_of_plot,
     edges: edges_of_plot
 };
-var plot_options = {
+let plot_options = {
     nodes: {
         shape: 'box'
     },
@@ -347,29 +366,13 @@ var plot_options = {
 
 };
 
-//setting of trial map
-
-var nodes_of_trial = new vis.DataSet([
-    // { id: 1, label: 'イベント1\nなにがおこるか', level: 0, group: 'event', color: 'orange' },
-    // { id: 2, label: 'state1\n時間\n場所\nオブジェクト名\n属性1：属性値1\n属性2：属性値2', level: 1, group: 'state', color: 'lime' },
-    // { id: 3, label: 'state2', level: 1, group: 'state', color: 'lime' }
-]);
-
-// create an array with edges
-var edges_of_trial = new vis.DataSet([{
-    // from: 1,
-    // to: 3
-},
-
-]);
-
 // create a network
-var trial_container = document.getElementById('trial_container');
-var trial_data = {
+let trial_container = document.getElementById('trial_container');
+let trial_data = {
     nodes: nodes_of_trial,
     edges: edges_of_trial
 };
-var trial_options = {
+let trial_options = {
     nodes: {
         shape: 'box',
         font: {
@@ -392,11 +395,48 @@ var trial_options = {
         addEdge: function (edgedata, callback) {
             let tonNode = nodes_of_trial.get(edgedata.to);
             let fromNode = nodes_of_trial.get(edgedata.from);
+            let edges = edges_of_trial.get();
+
+            //    同じエッジがあれば排除する
+            let duplicated_edges = edges_of_trial.get({
+                filter: function (item) {
+                    return (item.to === edgedata.to && item.from === edgedata.from);
+                }
+            })
+            if (duplicated_edges.length !== 0) {
+                alert('同じ接続を複数作る事はできません');
+                return;
+            }
+
+            //相互参照も引っかける
+            let inter_loop_edges = edges_of_trial.get({
+                filter: function (item) {
+                    return (item.to === edgedata.from && item.from === edgedata.to);
+                }
+            })
+
+            if (inter_loop_edges.length !== 0) {
+                alert('相互のループを作る事はできません');
+                return;
+            }
+
+
+
+            //コンクルから後ろに付けようとした時もはねる
+
+            if(fromNode.name==='conclusion'){
+                alert('Conclusion（結）から後ろに時系列を作ることはできません')
+                return;
+            }
+
+
             console.log(tonNode.group);
-            if (tonNode.group == 'event' && fromNode.group == 'state')
+            if (tonNode.group === 'event' && fromNode.group === 'state')
                 callback(edgedata);
-            if (tonNode.group == 'state' && fromNode.group == 'event')
+            if (tonNode.group === 'state' && fromNode.group === 'event')
                 callback(edgedata);
+
+
         },
         addNode: function (nodedata, callback) {
 
@@ -404,7 +444,7 @@ var trial_options = {
             // if(document.getElementById('add_node').showModal()=='event'){
             //     new_node = new Event(undefined);
             // }
-            // else 
+            // else
             // {
             //     new_node = new State(undefined);
             // }
@@ -423,29 +463,29 @@ var trial_options = {
             callback(new_node);
 
         },
-        deleteNode:function (nodedata, callback){
+        deleteNode: function (nodedata, callback) {
             //消せないノードが選択されてた時ははねる。
             let selected_nodes_data = nodes_of_trial.get(nodedata.nodes);
-            for(let i=0;i<selected_nodes_data.length;i++){
-                if(selected_nodes_data[i].name==='introduction') {
+            for (let i = 0; i < selected_nodes_data.length; i++) {
+                if (selected_nodes_data[i].name === 'introduction') {
                     callback();
-                    return ;
+                    return;
                 }
-                if(selected_nodes_data[i].name==='development') {
+                if (selected_nodes_data[i].name === 'development') {
                     callback();
-                    return ;
+                    return;
                 }
-                if(selected_nodes_data[i].name==='turn') {
+                if (selected_nodes_data[i].name === 'turn') {
                     callback();
-                    return ;
+                    return;
                 }
-                if(selected_nodes_data[i].name==='conclusion') {
+                if (selected_nodes_data[i].name === 'conclusion') {
                     callback();
-                    return ;
+                    return;
                 }
-                if(selected_nodes_data[i].name==='テーマの条件部') {
+                if (selected_nodes_data[i].name === 'テーマの条件部') {
                     callback();
-                    return ;
+                    return;
                 }
             }
             //上の条件を全部スルーできたらとりあえず普通にコールバック呼んでおく
@@ -1135,6 +1175,9 @@ let plot_extraction = new Vue({
                 give_qiestions.display=true;
                 state_editor.display=true;
 
+                //トライアル部のマニピュレをONに
+                trial_map.setOptions(trial_options);
+
                 return
             }
 
@@ -1143,6 +1186,9 @@ let plot_extraction = new Vue({
             state_editor.display=false;
             this.switched_button_message = 'プロット抽出モード終わり'
             this.current_trial_nodes = new vis.DataSet(nodes_of_trial.get());
+            //トライアルノードの操作を禁止する
+            trial_map.setOptions({manipulation: false});
+
 
             //主人公の情報はここに入ってる
             let chara_express_model;
@@ -1225,11 +1271,18 @@ let plot_extraction = new Vue({
 
                     child_candidates.forEach(item => {
                         let can_be_add = true;
-                        for (let checker = expand_target; checker !== 0; checker = edge_white_tree[checker].parent) {
-                            if (edge_white_tree[checker].node === item.from) {
-                                can_be_add = false;
+                        let node_content = nodes_of_trial.get(item.from);
+
+                        if(node_content.name==="development"||node_content.name==="turn"||node_content.name==="conclusion")
+                            can_be_add=false;
+                        else{
+                            for (let checker = expand_target; checker !== 0; checker = edge_white_tree[checker].parent) {
+                                if (edge_white_tree[checker].node === item.from) {
+                                    can_be_add = false;
+                                }
                             }
                         }
+
                         if (can_be_add) {
                             edge_white_tree.push({
                                 parent: expand_target,
