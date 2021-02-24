@@ -24,7 +24,7 @@
             <div id="plot_container" class="map_element"></div>
         </div>
         <div class="map">
-            <p>トライアル部</p>
+            <p>トライアル部（青系：状態, 黄色系：イベント（それぞれ濃いものが重要）</p>
             <div id="trial_container" class="map_element"></div>
         </div>
     </div>
@@ -193,9 +193,12 @@
             <button @click="previous_route">＜</button>
             <button @click="next_route">＞</button>
             <button @click="route_select">ルート決定</button>
+            <button @click="plot_check">プロットチェック</button>
 
 
         </div>
+
+
 
         <div class="log_button">
             <button onclick="log_save()">ログデータ保存</button>

@@ -225,6 +225,8 @@ let edges_of_trial = new vis.DataSet([{
 
 ]);
 
+let global_setting;
+
 //ログ用クラス
 class Log{
     constructor() {
@@ -395,7 +397,7 @@ let trial_options = {
         addEdge: function (edgedata, callback) {
             let tonNode = nodes_of_trial.get(edgedata.to);
             let fromNode = nodes_of_trial.get(edgedata.from);
-            let edges = edges_of_trial.get();
+            // let edges = edges_of_trial.get();
 
             //    同じエッジがあれば排除する
             let duplicated_edges = edges_of_trial.get({
@@ -495,11 +497,11 @@ let trial_options = {
     }
 };
 
-var plot_tree;
-var trial_map;
-var chartdemo;
+let plot_tree;
+let trial_map;
+let chartdemo;
 
-var global_setting = new Global_setting(undefined, undefined, 1);
+global_setting = new Global_setting(undefined, undefined, 1);
 
 const data_of_chart = [
     [1, 2, 3, 4],
@@ -589,7 +591,7 @@ const activateTemplate = () => {
                     // どの質問ボタンを表示するか
                     let selected_nodeid = params.nodes[0];
                     let item = nodes_of_trial.get(selected_nodeid);
-                    if (item.type == 'event') {
+                    if (item.type === 'event') {
                         let questions = Object.keys(give_qiestions.questions_and_methods);
                         for (let i = 0; i < questions.length; i++) {
                             give_qiestions.questions_and_methods[questions[i]].display = false;
@@ -597,7 +599,7 @@ const activateTemplate = () => {
                         give_qiestions.questions_and_methods.then_what.display = true;
                         give_qiestions.questions_and_methods.why_previous.display = true;
 
-                    } else if (item.type == 'state') {
+                    } else if (item.type === 'state') {
                         //どの質問項目を有効化、無効化するのか
                         let questions = Object.keys(give_qiestions.questions_and_methods);
                         for (let i = 0; i < questions.length; i++) {
@@ -605,8 +607,15 @@ const activateTemplate = () => {
                         }
                         //ノードが起承転結のどれかに応じて表示する質問を変更
 
+
                         give_qiestions.questions_and_methods.next_event.display = true;
                         give_qiestions.questions_and_methods.previous_event.display = true;
+
+                        //もしも結ならそれ以降のイベントを発想させる質問を与えない。
+                        if(name in item){
+                            if(item.name==='conclusion')
+                                give_qiestions.questions_and_methods.next_event.display = false;
+                        }
 
                         if (item.name==='introduction'||item.name==='development'||item.name==='turn'||item.name==='conclusion'){
                             state_editor.current_data = undefined;
@@ -774,10 +783,8 @@ let emotional_setting = new Vue({
                     return false
             }
 
-            if (this.empathized === undefined)
-                return false
+            return this.empathized !== undefined;
 
-            return true
         }
     },
 
@@ -851,6 +858,7 @@ let emotional_setting = new Vue({
                 }
 
                 states[i].label = states[i].generate_text();
+                states[i].color = 'steelblue';
 
                 scenes[i].condition = 1;
                 scenes[i].level = 1;
@@ -867,6 +875,8 @@ let emotional_setting = new Vue({
             let initial_event = new Event('テーマの条件部');
             initial_event.content = global_setting.theme_condition;
             initial_event.label = initial_event.generate_text();
+            initial_event.color='gold';
+
 
             nodes_of_trial.add(initial_event);
 
@@ -1050,10 +1060,10 @@ let give_qiestions = new Vue({
             let new_node;
 
 
-            if (this.questions_and_methods[this.showing_form].action == 'generate') {
+            if (this.questions_and_methods[this.showing_form].action === 'generate') {
                 //新しいノードとリンクの生成
                 //ノードの生成(イベントと状態で分ける)
-                if (this.questions_and_methods[this.showing_form].next_type == 'event') {
+                if (this.questions_and_methods[this.showing_form].next_type === 'event') {
                     new_node = new Event(undefined);
                     new_node.content = this.inputs_data.single;
                     new_node.label = this.inputs_data.single;
@@ -1067,7 +1077,7 @@ let give_qiestions = new Vue({
                 }
                 // エッジの生成（ただし、方向を考える必要あり
 
-                if (this.questions_and_methods[this.showing_form].edge_direction == 'next')
+                if (this.questions_and_methods[this.showing_form].edge_direction === 'next')
                     // toが造ったノード
                     edges_of_trial.add({
                         from: nodes[0],
@@ -1107,7 +1117,7 @@ let give_qiestions = new Vue({
                         break;
                 }
                 console.log(update_node);
-                if (update_node.type == 'state')
+                if (update_node.type === 'state')
                     update_node.label = State.generate_texts(update_node);
                 else
                     update_node.label = Event.generate_texts(update_node);
@@ -1256,33 +1266,40 @@ let plot_extraction = new Vue({
             }
 
             if (this.select_section === '0') {
-                //イントロまでが選択された時
+                //イントロまでが選択された時。ルートノードにイントロを突っ込む
                 edge_white_tree.push({
                     parent: undefined,
                     node: goal.id
                 });
 
+
+                //展開対象がある間繰り返し
                 while (expand_target !== edge_white_tree.length) {
+                    //子供の候補となるのは、展開対象がエッジの先に付いている元ノード
                     child_candidates = edges_of_trial.get({
                         filter: function (item) {
                             return (item.to === edge_white_tree[expand_target].node)
                         }
                     });
-
+                    //子供の候補を全部回す
                     child_candidates.forEach(item => {
                         let can_be_add = true;
                         let node_content = nodes_of_trial.get(item.from);
 
-                        if(node_content.name==="development"||node_content.name==="turn"||node_content.name==="conclusion")
-                            can_be_add=false;
-                        else{
+                        //子供の候補が基本構造なら追加しない
+                        if('name' in node_content){
+                            if(node_content.name==="introduction"||node_content.name==="development"||node_content.name==="turn"||node_content.name==="conclusion")
+                                can_be_add=false;
+                        }
+
+                        //展開対象までに至った経路の中で子供の候補が出てなければ追加可能
+                        if(can_be_add===true){
                             for (let checker = expand_target; checker !== 0; checker = edge_white_tree[checker].parent) {
                                 if (edge_white_tree[checker].node === item.from) {
                                     can_be_add = false;
                                 }
                             }
                         }
-
                         if (can_be_add) {
                             edge_white_tree.push({
                                 parent: expand_target,
@@ -1460,6 +1477,7 @@ let plot_extraction = new Vue({
             let preview_route = this.routes_ids[this.current_route];
             let preview_nodes = this.current_trial_nodes.get(preview_route);
             nodes_of_trial.clear();
+            nodes_of_trial.clear();
             nodes_of_trial.add(preview_nodes);
         },
         /**
@@ -1479,7 +1497,16 @@ let plot_extraction = new Vue({
                 this.current_route--;
             }
             this.route_preview();
+        },
+
+        /**
+         * プロットの整合性をチェックする奴
+         */
+        plot_check: function (){
+
         }
+
+
 
     }
 })
