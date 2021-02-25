@@ -190,9 +190,9 @@
             <button @click="extract_click">{{switched_button_message}}</button>
             <button @click="plot_delete">部分プロット削除</button>
 
-            <button @click="previous_route">＜</button>
-            <button @click="next_route">＞</button>
-            <button @click="route_select">ルート決定</button>
+            <button @click="previous_route" v-if="extract_mode">＜</button>
+            <button @click="next_route" v-if="extract_mode">＞</button>
+            <button @click="route_select" v-if="extract_mode">ルート決定</button>
             <button @click="plot_check">プロットチェック</button>
 
 

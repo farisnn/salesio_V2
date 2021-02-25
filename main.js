@@ -1405,6 +1405,13 @@ let plot_extraction = new Vue({
             }
             //とりあえずノードを突っ込む
             added_nodes.shift();
+
+            if (nodes_of_plot.get(added_node_ids)===null){
+                log_data.add_log('プロット挿入失敗');
+                alert('既にプロットにあるイベントor状態を新たに追加できません')
+                return;
+
+            }
             nodes_of_plot.add(added_nodes);
 
             //親となるノードを探索
@@ -1503,11 +1510,40 @@ let plot_extraction = new Vue({
          * プロットの整合性をチェックする奴
          */
         plot_check: function (){
+            plot_tree.storePositions();
+            let nodes = nodes_of_plot.get({
+                filter:function (item){
+                     return(item.level===2);
+                }
+            });
+            //Yの座標でソート
+            nodes.sort(function (a, b) {
+                if (a.y < b.y)
+                    return -1
+                if (a.y > b.y)
+                    return 1
+                return 0
+            });
 
+            //プロット部で上下に並んでいるノードのエッジがトライアル部に存在するかチェック
+            for(let i=0;i<nodes.length-1;i++){
+                let target_edge = edges_of_trial.get({
+                    filter:function (item) {
+                        return item.from===nodes[i].id&&item.from===nodes[i+1].id
+                    }
+                });
+
+                if(target_edge===null){
+                    trial_map.selectNodes([nodes[i].id,nodes[i+1].id])
+                    log_data.add_log('プロットチェックで矛盾検出');
+                    alert('トライアル部で接続のないプロット上での繋がりが見つかりました。接続がない二つのノードがトライアル部で選択されています');
+                    return;
+                }
+
+                log_data.add_log('プロットチェックで矛盾非検出');
+                alert('矛盾は見つかりませんでした');
+            }
         }
-
-
-
     }
 })
 
@@ -1701,8 +1737,6 @@ function generate_emotion_feedback() {
     } else {
         alert('感情設定に矛盾は見つかりませんでした');
     }
-
-
     // if(have_problem)
     //     // toastr.warning('診断結果をチェックしてみましょう');
     //     toastr.warning('let check results');
@@ -1776,8 +1810,6 @@ function getCsv(url) {
 
     return res;
 }
-
-
 
 function log_save() {
     //データを取り出して格納（ノードとエッジに関する全てのデータは保存されている、はず……
