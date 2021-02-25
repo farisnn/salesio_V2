@@ -1408,7 +1408,7 @@ let plot_extraction = new Vue({
 
             if (nodes_of_plot.get(added_node_ids)===null){
                 log_data.add_log('プロット挿入失敗');
-                alert('既にプロットにあるイベントor状態を新たに追加できません')
+                alert('既にプロットにあるイベントor状態を新たに追加できません');
                 return;
 
             }
@@ -1537,6 +1537,16 @@ let plot_extraction = new Vue({
                     trial_map.selectNodes([nodes[i].id,nodes[i+1].id])
                     log_data.add_log('プロットチェックで矛盾検出');
                     alert('トライアル部で接続のないプロット上での繋がりが見つかりました。接続がない二つのノードがトライアル部で選択されています');
+                    return;
+                }
+                let target_node = nodes_of_plot.get({
+                    filter:function (item) {
+                        return item.name==='テーマの条件部'
+                    }
+                });
+                if (target_node===null){
+                    log_data.add_log('条件イベント不備');
+                    alert('重要なイベントがプロットにありません');
                     return;
                 }
 
