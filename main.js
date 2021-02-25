@@ -1171,6 +1171,7 @@ let plot_extraction = new Vue({
             current_route: 0,
             select_section: undefined,
             current_trial_nodes: undefined,
+            current_trial_edges:undefined,
             switched_button_message: 'プロット抽出',
             display: false
         })
@@ -1183,6 +1184,7 @@ let plot_extraction = new Vue({
                 give_qiestions.display = true;
                 state_editor.display=true;
                 nodes_of_trial.update(this.current_trial_nodes.get());
+                edges_of_trial.update(this.current_trial_edges.get());
                 this.switched_button_message = 'プロット抽出モード';
                 //ログデータの追加
                 log_data.add_log("プロット抽出モードが終了");
@@ -1207,6 +1209,7 @@ let plot_extraction = new Vue({
             state_editor.display=false;
             this.switched_button_message = 'プロット抽出モード終わり'
             this.current_trial_nodes = new vis.DataSet(nodes_of_trial.get());
+            this.current_trial_edges = new vis.DataSet(edges_of_trial.get());
             //トライアルノードの操作を禁止する
             trial_map.setOptions({manipulation: false});
 
@@ -1357,11 +1360,9 @@ let plot_extraction = new Vue({
                     node: start.id
                 })
                 while (expand_target !== edge_white_tree.length) {
-
-
                     let expand_target_node = nodes_of_trial.get(edge_white_tree[expand_target]);
                     if ('name' in expand_target_node) {
-                        if (expand_target_node.name !== goal_name && expand_target_node !== start_name) {
+                        if (expand_target_node.name !== goal_name && expand_target_node.name !== start_name) {
                             expand_target++;
                             continue;
                         }
@@ -1376,13 +1377,6 @@ let plot_extraction = new Vue({
                     child_candidates.forEach(item => {
                         //ループチェック
                         let can_be_add = true;
-                        let node_content = nodes_of_trial.get(item.from);
-
-                        //子供の候補がゴールじゃない基本構造なら追加しない
-                        if('name' in node_content){
-                            if(node_content.name!==goal_name)
-                                can_be_add=false;
-                        }
 
                         for (let checker = expand_target; checker !== 0; checker = edge_white_tree[checker].parent) {
                             if (edge_white_tree[checker].node === item.to)
@@ -1520,9 +1514,21 @@ let plot_extraction = new Vue({
 
             let preview_route = this.routes_ids[this.current_route];
             let preview_nodes = this.current_trial_nodes.get(preview_route);
-            nodes_of_trial.clear();
+            let preview_edges = this.current_trial_edges.get({
+                filter:function (item) {
+                    for(let i=0;i<plot_extraction.routes_ids[plot_extraction.current_route].length-1;i++){
+                        if(item.from===plot_extraction.routes_ids[plot_extraction.current_route][i]&&item.to===plot_extraction.routes_ids[plot_extraction.current_route][i+1]){
+                            return true
+                        }
+                    }
+                    return false;
+                }
+            });
+
             nodes_of_trial.clear();
             nodes_of_trial.add(preview_nodes);
+            edges_of_trial.clear();
+            edges_of_trial.add(preview_edges);
         },
         /**
          * 前のルートを表示する奴
