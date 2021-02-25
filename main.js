@@ -585,6 +585,10 @@ const activateTemplate = () => {
 
                 plot_tree = new vis.Network(plot_container, plot, plot_options);
                 trial_map = new vis.Network(trial_container, trial_data, trial_options);
+                trial_map.setOptions({
+                    manipulation:false
+                });
+
                 trial_map.on('selectNode', function (params) {
                     console.log('Select_fired');
                     //トライアルマップでノードが選択された時にする動作
@@ -889,6 +893,8 @@ let emotional_setting = new Vue({
             give_qiestions.display = true;
             state_editor.display=true;
             plot_extraction.display = true;
+
+            trial_map.setOptions(trial_options);
 
             //ログデータの追加
             log_data.add_log("登場人物の感情が設定されました");
@@ -1240,7 +1246,8 @@ let plot_extraction = new Vue({
             let start;
             let goal;
             let edge_white_tree = []
-            let name;
+            let goal_name;
+            let start_name;
             this.routes_ids = [];
 
             let com;//ログのコメント保持用
@@ -1252,25 +1259,29 @@ let plot_extraction = new Vue({
                     start = undefined;
                     goal = intro[0];
                     com = "introまで抽出";
-                    name='introduction';
+                    goal_name='introduction';
+                    start_name=undefined;
                     break;
                 case '1':
                     start = intro[0];
                     goal = develop[0];
                     com = "developmentまで抽出";
-                    name= 'development';
+                    goal_name= 'development';
+                    start_name='introduction';
                     break;
                 case '2':
                     start = develop[0];
                     goal = turn[0];
                     com = "turnまで抽出";
-                    name='turn';
+                    goal_name='turn';
+                    start_name='development';
                     break;
                 case '3':
                     start = turn[0];
                     goal = concl[0];
                     com = "conclusionまで抽出";
-                    name='conclusion';
+                    goal_name='conclusion';
+                    start_name='turn';
                     break;
             }
 
@@ -1347,8 +1358,10 @@ let plot_extraction = new Vue({
                 })
                 while (expand_target !== edge_white_tree.length) {
 
-                    if('name' in nodes_of_trial.get(edge_white_tree[expand_target])){
-                        if(nodes_of_trial.get(edge_white_tree[expand_target]).name!==name){
+
+                    let expand_target_node = nodes_of_trial.get(edge_white_tree[expand_target]);
+                    if ('name' in expand_target_node) {
+                        if (expand_target_node.name !== goal_name && expand_target_node !== start_name) {
                             expand_target++;
                             continue;
                         }
@@ -1367,7 +1380,7 @@ let plot_extraction = new Vue({
 
                         //子供の候補がゴールじゃない基本構造なら追加しない
                         if('name' in node_content){
-                            if(node_content.name!==name)
+                            if(node_content.name!==goal_name)
                                 can_be_add=false;
                         }
 
