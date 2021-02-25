@@ -591,6 +591,7 @@ const activateTemplate = () => {
                     // どの質問ボタンを表示するか
                     let selected_nodeid = params.nodes[0];
                     let item = nodes_of_trial.get(selected_nodeid);
+                    give_qiestions.showing_form = 'none';
                     if (item.type === 'event') {
                         let questions = Object.keys(give_qiestions.questions_and_methods);
                         for (let i = 0; i < questions.length; i++) {
@@ -612,7 +613,7 @@ const activateTemplate = () => {
                         give_qiestions.questions_and_methods.previous_event.display = true;
 
                         //もしも結ならそれ以降のイベントを発想させる質問を与えない。
-                        if(name in item){
+                        if('name' in item){
                             if(item.name==='conclusion')
                                 give_qiestions.questions_and_methods.next_event.display = false;
                         }
@@ -1235,6 +1236,7 @@ let plot_extraction = new Vue({
             let start;
             let goal;
             let edge_white_tree = []
+            let name;
             this.routes_ids = [];
 
             let com;//ログのコメント保持用
@@ -1245,23 +1247,26 @@ let plot_extraction = new Vue({
                     //ここ、イントロまでの動作なんでちょっと変更する必要あり
                     start = undefined;
                     goal = intro[0];
-                    com = "introまで抽出"
+                    com = "introまで抽出";
+                    name='introduction';
                     break;
                 case '1':
                     start = intro[0];
                     goal = develop[0];
-                    com = "developmentまで抽出"
-
+                    com = "developmentまで抽出";
+                    name= 'development';
                     break;
                 case '2':
                     start = develop[0];
                     goal = turn[0];
-                    com = "turnまで抽出"
+                    com = "turnまで抽出";
+                    name='turn';
                     break;
                 case '3':
                     start = turn[0];
                     goal = concl[0];
-                    com = "conclusionまで抽出"
+                    com = "conclusionまで抽出";
+                    name='conclusion';
                     break;
             }
 
@@ -1336,18 +1341,28 @@ let plot_extraction = new Vue({
                     parent: undefined,
                     node: start.id
                 })
-                while (expand_target != edge_white_tree.length) {
+                while (expand_target !== edge_white_tree.length) {
+                    if(nodes_of_trial.get(edge_white_tree[expand_target]).name!==name)
+                        continue;
 
                     // 展開して接続先を取得
                     child_candidates = edges_of_trial.get({
                         filter: function (item) {
-                            return (item.from == edge_white_tree[expand_target].node)
+                            return (item.from === edge_white_tree[expand_target].node)
                         }
                     });
                     child_candidates.forEach(item => {
                         //ループチェック
                         let can_be_add = true;
-                        for (let checker = expand_target; checker != 0; checker = edge_white_tree[checker].parent) {
+                        let node_content = nodes_of_trial.get(item.from);
+
+                        //子供の候補がゴールじゃない基本構造なら追加しない
+                        if('name' in node_content){
+                            if(node_content.name!==name)
+                                can_be_add=false;
+                        }
+
+                        for (let checker = expand_target; checker !== 0; checker = edge_white_tree[checker].parent) {
                             if (edge_white_tree[checker].node === item.to)
                                 can_be_add = false;
                         }
@@ -1550,13 +1565,12 @@ let plot_extraction = new Vue({
                     return;
                 }
 
-                log_data.add_log('プロットチェックで矛盾非検出');
-                alert('矛盾は見つかりませんでした');
             }
+            log_data.add_log('プロットチェックで矛盾非検出');
+            alert('矛盾は見つかりませんでした');
         }
     }
 })
-
 
 // let add_new_state = new Vue({
 //     el: '#new_state',
