@@ -1346,9 +1346,12 @@ let plot_extraction = new Vue({
                     node: start.id
                 })
                 while (expand_target !== edge_white_tree.length) {
-                    if(nodes_of_trial.get(edge_white_tree[expand_target]).name!==name){
-                        expand_target++;
-                        continue;
+
+                    if('name' in nodes_of_trial.get(edge_white_tree[expand_target])){
+                        if(nodes_of_trial.get(edge_white_tree[expand_target]).name!==name){
+                            expand_target++;
+                            continue;
+                        }
                     }
 
                     // 展開して接続先を取得
@@ -1431,8 +1434,10 @@ let plot_extraction = new Vue({
                 return;
 
             }
-            nodes_of_plot.add(added_nodes);
+            //現在入ってるプロットを削除する
+            this.plot_delete();
 
+            nodes_of_plot.add(added_nodes);
             //親となるノードを探索
             switch (this.select_section) {
                 case '0':
