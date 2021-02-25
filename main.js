@@ -1412,6 +1412,30 @@ let plot_extraction = new Vue({
                 log_data.add_log(com);
             }
 
+            if(edge_white_tree.length===1)
+            {
+                alert('そんなルートはないよ');
+                this.extract_mode = false;
+                give_qiestions.display = true;
+                state_editor.display=true;
+                nodes_of_trial.update(this.current_trial_nodes.get());
+                edges_of_trial.update(this.current_trial_edges.get());
+                this.switched_button_message = 'プロット抽出モード';
+                //ログデータの追加
+                log_data.add_log("プロット抽出モードが終了");
+                // console.log(log_data);
+
+                //質問ボタンの非表示化と抽出関連の表示
+                give_qiestions.display=true;
+                state_editor.display=true;
+
+                //トライアル部のマニピュレをONに
+                trial_map.setOptions(trial_options);
+
+                return;
+            }
+
+            this.current_route=0;
             this.route_preview();
             //データの用意
             // this.routes_ids.forEach(r =>{
