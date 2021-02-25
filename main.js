@@ -1525,9 +1525,10 @@ let plot_extraction = new Vue({
                 }
             });
 
-            nodes_of_trial=new vis.DataSet(preview_nodes);
-
-            edges_of_trial=new vis.DataSet(preview_edges);
+            nodes_of_trial.clear();
+            nodes_of_trial.add(preview_nodes);
+            edges_of_trial.clear();
+            edges_of_trial.add(preview_edges);
 
         },
         /**
