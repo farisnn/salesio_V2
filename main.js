@@ -1191,6 +1191,10 @@ let plot_extraction = new Vue({
 
                 return
             }
+            //なにも選んでなければ跳ねる
+            if(this.select_section===undefined) {
+                return;
+            }
 
             this.extract_mode = true;
             give_qiestions.display = false;
@@ -1342,8 +1346,10 @@ let plot_extraction = new Vue({
                     node: start.id
                 })
                 while (expand_target !== edge_white_tree.length) {
-                    if(nodes_of_trial.get(edge_white_tree[expand_target]).name!==name)
+                    if(nodes_of_trial.get(edge_white_tree[expand_target]).name!==name){
+                        expand_target++;
                         continue;
+                    }
 
                     // 展開して接続先を取得
                     child_candidates = edges_of_trial.get({
@@ -1391,8 +1397,6 @@ let plot_extraction = new Vue({
                     this.routes_ids.push(route);
                     console.log(nodes_of_trial.get(route));
                 });
-
-
                 give_qiestions.display=false;
                 state_editor.display=false;
                 log_data.add_log(com);
