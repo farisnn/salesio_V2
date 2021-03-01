@@ -108,16 +108,18 @@
 
         <div id="edit_state" v-if="display&&!mode&&!(current_data===undefined)">
             <!--質問によらず状態を形成するところ-->
+
+            時間：<input type="text" v-model="time">
+            場所：<input type="text" v-model="place">
             <div id="editor" v-for="(c,object_name) in current_data.objects">
-                <input type="text" class="edit_object" v-bind:value="object_name" placeholder="オブジェクト名">
-                <button @click="del_object(c)">オブジェクト削除</button>
+                {{object_name}}
+                <button @click="del_object(object_name)">オブジェクト削除</button>
                 <br>
                 <div id="edit_attr" v-for="(v,attr_name) in current_data.objects[object_name]">
-                    <input type="text" class="edit_attribute" v-bind:value="attr_name" placeholder="属性">
-                    <input type="text" class="edit_value" v-bind:value="v" placeholder="値">
-                    <button @click="del_attribute(c,v)">属性・属性値削除</button>
+               {{attr_name}}:{{v}}
+                    <button @click="del_attribute(object_name,attr_name)">属性・属性値削除</button>
                 </div>
-                <button @click="add_attribute(c)">属性・属性値追加</button>
+                <button @click="add_attribute(object_name)">属性・属性値追加</button>
             </div>
             <button @click="add_object">オブジェクト追加</button><br />
             <button @click="update">更新</button>
@@ -268,7 +270,7 @@
         <button @click="ok_click">OK</button>
     </dialog>
 
-    <dialog id="new_state">
+    <dialog id="change_state">
         <p>状態の内容</p>
         <p>時間</p>
         <input type="text" v-model="time">

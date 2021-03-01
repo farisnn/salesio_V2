@@ -6,15 +6,9 @@
   left: 0;
   bottom: 0;
   right: 0;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-  -webkit-box-pack: center;
-      -ms-flex-pack: center;
-          justify-content: center;
+  align-items: center;
+  justify-content: center;
   background: rgba(0, 0, 0, 0.3);
 }
 
@@ -27,46 +21,40 @@
   border-radius: 10px;
   text-align: center;
 }
-
 #modal-content h2 {
   margin: 0;
   font-size: 1.2em;
 }
 
 #map_container {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-orient: horizontal;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: row;
-          flex-direction: row;
+  flex-direction: row;
   height: 500px;
 }
 
 .map {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-      -ms-flex-direction: column;
-          flex-direction: column;
+  flex: 1;
+  flex-direction: column;
   border: 1px solid lightgray;
 }
 
 .map_element {
-  -webkit-box-flex: 1;
-      -ms-flex: 1;
-          flex: 1;
+  flex: 1;
   min-height: 0;
 }
 
 #interaction_part {
-  height: 500px;
   border: 1px solid lightblue;
 }
+
+.log_button {
+  text-align: right;
+}
+
+#plot_extraction {
+  width: 50%;
+  border: solid 1px black;
+}
+
 /*# sourceMappingURL=index.css.map */

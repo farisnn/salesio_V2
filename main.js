@@ -647,6 +647,9 @@ const activateTemplate = () => {
                             give_qiestions.questions_and_methods[questions[i]].display = false;
                         }
                         give_qiestions.showing_form = 'none';
+                        //状態のオブジェクト変更機能もなしに
+                        state_editor.current_data=undefined;
+
                     }
                     //params.event(params);
                 });
@@ -927,8 +930,8 @@ let state_editor = new Vue({
         return{
             display:false,
             mode:false,
-            current_data:{
-               // これはサンプルデータ
+            current_data:undefined
+            // これはサンプルデータ
                 // objects:{
                 //         "主人公":{
                 //             "性別":"男",
@@ -939,30 +942,110 @@ let state_editor = new Vue({
                 //         "sex": "female"
                 //     }
                 // }
-            }//selectedのときに状態なら入れるようにしてみた。どうなるかなぁ……
+         //selectedのときに状態なら入れるようにしてみた。どうなるかなぁ……
         }
     },
+    computed:{
+        time :{
+            get:function() {
+                if (this.current_data.time === undefined) {
+                    return'';
+                }
+                return this.current_data.time;
+            },
+            set:function (item){
+                if (item === '')
+                    this.current_data.time=undefined;
+                else
+                    this.current_data.time=item;
+            }
+
+        },
+        place :{
+            get:function() {
+                if (this.current_data.place === undefined) {
+                    return'';
+                }
+                return this.current_data.place;
+            },
+            set:function (item) {
+                if(item==='')
+                    this.current_data.place=undefined;
+                else
+                    this.current_data.place=item;
+            }
+
+        }
+    },
+
     methods:{
         add_object:function () {
-            this.current_data.objects[""]="";
+            let obj_name = window.prompt('追加するオブジェクト名を入力して下さい')
+            if(obj_name===null)
+                return;
+            if(obj_name in this.current_data.objects){
+                alert('そのオブジェクトは既に存在します');
+                return;
+            }
+            if(obj_name===''){
+                alert('名前のないオブジェクトはつくれません');
+                return;
+            }
+
+            // this.current_data.objects[obj_name]={}
+            this.$set(this.current_data.objects,obj_name,{});
+            this.update();
+
         },
         del_object:function (obj) {
-            delete this.current_data.objects[obj];
+            // delete this.current_data.objects[obj];
+            this.$delete(this.current_data.objects,obj);
+
+            this.update();
+
         },
         add_attribute:function(obj) {
-            this.current_data.objects[obj][""] = "";
+
+            let attr_name = window.prompt('追加する属性を入力して下さい');
+            if(attr_name===null)
+                return;
+            if(attr_name in this.current_data.objects[obj]){
+                alert('その属性は既に存在します');
+                return;
+            }
+            if(attr_name===''){
+                alert('名前のない属性はつくれません');
+                return;
+            }
+
+            let val = window.prompt('属性値を入力して下さい');
+            if(attr_name===null)
+                return;
+
+            // this.current_data.objects[obj][attr_name] = attr_name;
+            this.$set(this.current_data.objects[obj],attr_name,val);
+
+            this.update();
         },
         del_attribute:function (obj,attr) {
-            delete this.current_data.objects[obj][attr];
+            // delete this.current_data.objects[obj][attr];
+
+            this.$delete(this.current_data.objects[obj],[attr]);
+            this.update();
         },
 
         update:function () {
             //ノードの更新をどうにかする関数。たぶんここに入ってるcurrent_dataを用いてtiral_nodesをアップデートすれば行けるはず。たぶん。
-            this.current_data.label = this.current_data.generate_text();
+            // this.current_data.label = this.current_data.generate_text();
+            this.$set(this.current_data,'label',this.current_data.generate_text());
+            nodes_of_trial.remove(this.current_data.id);
+            nodes_of_trial.add(this.current_data);
 
-            nodes_of_trial.update(this.current_data);
+            trial_map.selectNodes([this.current_data.id]);
 
             log_data.add_log("状態ノードを更新しました");
+
+
 
         }
     }
@@ -1140,7 +1223,7 @@ let give_qiestions = new Vue({
     }
 });
 
-// ちょっとしたテスト
+
 let add_new_event = new Vue({
     el: '#new_event',
     data: function () {
