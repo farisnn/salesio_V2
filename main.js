@@ -150,6 +150,8 @@ const all_emotions = {
     }
 };
 
+
+
 //感情データの読み込み
 const positive_emotions_relations = getCsv("test_rule_count_positive_th5.csv");
 const negative_emotions_relations = getCsv("test_rule_count_negative_th5.csv");
@@ -493,7 +495,8 @@ let trial_options = {
             //上の条件を全部スルーできたらとりあえず普通にコールバック呼んでおく
             callback(nodedata);
 
-        }
+        },
+        editEdge:false
     }
 };
 
@@ -1540,18 +1543,7 @@ let plot_extraction = new Vue({
                 //ここであと、高さの調整が必要かも……
             }
             //とりあえずノードを突っ込む
-            added_nodes.shift();
 
-            if (nodes_of_plot.get(added_node_ids)===null){
-                log_data.add_log('プロット挿入失敗');
-                alert('既にプロットにあるイベントor状態を新たに追加できません');
-                return;
-
-            }
-            //現在入ってるプロットを削除する
-            this.plot_delete();
-
-            nodes_of_plot.add(added_nodes);
             //親となるノードを探索
             switch (this.select_section) {
                 case '0':
@@ -1568,6 +1560,21 @@ let plot_extraction = new Vue({
                     parent_node_id = 5;
                     break;
             }
+
+
+            if(parent_node_id!==2)
+                added_nodes.shift();
+
+            if (nodes_of_plot.get(added_node_ids)===null){
+                log_data.add_log('プロット挿入失敗');
+                alert('既にプロットにあるイベントor状態を新たに追加できません');
+                return;
+
+            }
+            //現在入ってるプロットを削除する
+            this.plot_delete();
+
+            nodes_of_plot.add(added_nodes);
 
             //エッジを追加する
             let add_edges = [];
