@@ -35,13 +35,13 @@
         <p id="setting_final_attribute" v-if="display">{{theme_conclusion}}はなにがどうなること？<br>
             <input type="text" id="final_attribute" placeholder="お金" v-model="attribute">が
             <input type="text" id="final_value" placeholder="潤沢" v-model="value">なこと
-            <button v-on:click="ok">OK</button>　
+            <button v-on:click="ok" v-if="inputted">OK</button>　
         </p>
 
         <!-- 最終状態のスロットを表現するキャラクターを決めるフォーム -->
         <p id="setting_final_state_character" v-if="display">{{attribute}}が{{value}}になるのは誰？<br>
             <input type="text" placeholder="主人公" v-model="character"><br>
-            <button v-on:click="ok">OK</button>　
+            <button v-on:click="ok" v-if="inputted">OK</button>　
         </p>
         <!-- 登場人物の感情を決めるフォーム？-->
         <div id="emotional_setting" v-if="display">
@@ -182,7 +182,7 @@
         </div>
         <div id="plot_extraction" v-if="display">
 
-            <select v-model="select_section">
+            <select v-model="select_section" v-bind:disabled="extract_mode">
                 <option value="0" >起まで</option>
                 <option value="1">起から承</option>
                 <option value="2">承から転</option>
@@ -249,7 +249,7 @@
                     <!--            <p>★感情外化診断結果★</p>-->
                 </div>
 
-                <button id="global_ok" v-on:click="start">はじめる</button>
+                <button id="global_ok" v-on:click="start" >はじめる</button>
             </div>
         </div>
     </template>

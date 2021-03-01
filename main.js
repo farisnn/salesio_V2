@@ -586,6 +586,21 @@ const activateTemplate = () => {
         methods: {
             start: function () {
 
+                //入力された初期設定を基にオブジェクト造って、最初の質問をする。
+                let condition_theme = $('#theme_condition').val();
+                let theme_conclusion = $('#theme_conclusion').val();
+                let num = event.target.value = $('#curve_select').find('> option:selected').val();
+
+                if(condition_theme===''||theme_conclusion==='') {
+                    alert('テーマを入力して下さい');
+                    return;
+                }
+
+
+                global_setting = new Global_setting(condition_theme, theme_conclusion, num);
+                setting_final_attribute.theme_conclusion = global_setting.theme_conclusion;
+                emotional_setting.story_arc = num - 1;
+
                 plot_tree = new vis.Network(plot_container, plot, plot_options);
                 trial_map = new vis.Network(trial_container, trial_data, trial_options);
                 trial_map.setOptions({
@@ -658,14 +673,6 @@ const activateTemplate = () => {
                 });
 
 
-                //入力された初期設定を基にオブジェクト造って、最初の質問をする。
-                let condition_theme = $('#theme_condition').val();
-                let theme_conclusion = $('#theme_conclusion').val();
-                let num = event.target.value = $('#curve_select').find('> option:selected').val();
-
-                global_setting = new Global_setting(condition_theme, theme_conclusion, num);
-                setting_final_attribute.theme_conclusion = global_setting.theme_conclusion;
-                emotional_setting.story_arc = num - 1;
 
                 // プロット部のルートノードの更新
                 nodes_of_plot.update(
@@ -705,6 +712,11 @@ let setting_final_attribute = new Vue({
             value: ''
         }
     },
+    computed:{
+      inputted:function () {
+          return this.attribute!==''&&this.value!=='';
+      }
+    },
     methods: {
         ok: function () {
 
@@ -730,6 +742,11 @@ let setting_final_state_character = new Vue({
             attribute: '',
             value: '',
             character: ''
+        }
+    },
+    computed:{
+        inputted:function () {
+            return this.character!=="";
         }
     },
     methods: {
@@ -1420,23 +1437,24 @@ let plot_extraction = new Vue({
                 }
 
                 //    ここまででルート木が完成しているので、あとはなんとかする　
+                //ルートしかない木はルートが発見できていないと見なす
 
-                let leaf_nodes = edge_white_tree.filter(function (item, num) {
-                    let checker = edge_white_tree.find(item2 => item2.parent === num);
-                    return checker === undefined;
-                });
-
-                //葉ノードが抽出されたので、後は親を辿ってルートに突っ込む
-                for (let i = 0; i < leaf_nodes.length; i++) {
-                    let current_node = leaf_nodes[i];
-                    let target_index = leaf_nodes[i].parent;
-                    let route = [leaf_nodes[i].node];
-
-                    while (target_index !== undefined) {
-                        route.push(edge_white_tree[target_index].node);
-                        target_index = edge_white_tree[target_index].parent;
+                if (edge_white_tree.length !== 1) {
+                    let leaf_nodes = edge_white_tree.filter(function (item, num) {
+                        let checker = edge_white_tree.find(item2 => item2.parent === num);
+                        return checker === undefined;
+                    });
+                    //葉ノードが抽出されたので、後は親を辿ってルートに突っ込む
+                    for (let i = 0; i < leaf_nodes.length; i++) {
+                        let current_node = leaf_nodes[i];
+                        let target_index = leaf_nodes[i].parent;
+                        let route = [leaf_nodes[i].node];
+                        while (target_index !== undefined) {
+                            route.push(edge_white_tree[target_index].node);
+                            target_index = edge_white_tree[target_index].parent;
+                        }
+                        this.routes_ids.push(route);
                     }
-                    this.routes_ids.push(route);
                 }
             } else {
                 //
@@ -1446,9 +1464,9 @@ let plot_extraction = new Vue({
                     node: start.id
                 })
                 while (expand_target !== edge_white_tree.length) {
-                    let expand_target_node = nodes_of_trial.get(edge_white_tree[expand_target]);
+                    let expand_target_node = nodes_of_trial.get(edge_white_tree[expand_target].node);
                     if ('name' in expand_target_node) {
-                        if (expand_target_node.name !== goal_name && expand_target_node.name !== start_name) {
+                        if (expand_target_node.name !== goal_name && expand_target_node.name !== start_name && expand_target_node.name!==''&& expand_target_node.type!=='event') {
                             expand_target++;
                             continue;
                         }
@@ -1498,7 +1516,8 @@ let plot_extraction = new Vue({
                 log_data.add_log(com);
             }
 
-            if(edge_white_tree.length===1)
+
+            if(this.routes_ids.length===0)
             {
                 alert('そんなルートはないよ');
                 this.extract_mode = false;
@@ -1538,12 +1557,6 @@ let plot_extraction = new Vue({
             let added_nodes = this.current_trial_nodes.get(added_node_ids);
             let parent_node_id = undefined;
 
-            for (let i = 0; i < added_nodes.length; i++) {
-                added_nodes[i].level = 2;
-                //ここであと、高さの調整が必要かも……
-            }
-            //とりあえずノードを突っ込む
-
             //親となるノードを探索
             switch (this.select_section) {
                 case '0':
@@ -1565,15 +1578,23 @@ let plot_extraction = new Vue({
             if(parent_node_id!==2)
                 added_nodes.shift();
 
-            if (nodes_of_plot.get(added_node_ids)===null){
+            if (nodes_of_plot.get(added_node_ids).length!==0){
                 log_data.add_log('プロット挿入失敗');
                 alert('既にプロットにあるイベントor状態を新たに追加できません');
                 return;
 
             }
+
+
+            for (let i = 0; i < added_nodes.length; i++) {
+                added_nodes[i].level = 2;
+                //ここであと、高さの調整が必要かも……
+            }
+
+
             //現在入ってるプロットを削除する
             this.plot_delete();
-
+            //ノードを突っ込む
             nodes_of_plot.add(added_nodes);
 
             //エッジを追加する
