@@ -151,7 +151,6 @@ const all_emotions = {
 };
 
 
-
 //感情データの読み込み
 const positive_emotions_relations = getCsv("test_rule_count_positive_th5.csv");
 const negative_emotions_relations = getCsv("test_rule_count_negative_th5.csv");
@@ -230,24 +229,24 @@ let edges_of_trial = new vis.DataSet([{
 let global_setting;
 
 //ログ用クラス
-class Log{
+class Log {
     constructor() {
-        this.log_data=[];
+        this.log_data = [];
     }
 
-    add_log(comment){
+    add_log(comment) {
         //現状のログを整形する。
-        let added_log={};
+        let added_log = {};
         //現在秒の取得とログデータへの格納
-        added_log.time =　Math.floor((new Date()).getTime() / 1000);
+        added_log.time = Math.floor((new Date()).getTime() / 1000);
         //初期設定データの格納
         added_log.global_setting = global_setting;
         //登場人物データの格納
         added_log.characters_setting = emotional_setting.characters;
 
         //マップデータの格納
-        added_log.plot_nodes=nodes_of_plot.get();
-        added_log.plot_edges=edges_of_plot.get();
+        added_log.plot_nodes = nodes_of_plot.get();
+        added_log.plot_edges = edges_of_plot.get();
 
         added_log.trial_nodes = nodes_of_trial.get();
         added_log.trial_edgs = edges_of_trial.get();
@@ -425,14 +424,12 @@ let trial_options = {
             }
 
 
-
             //コンクルから後ろに付けようとした時もはねる
 
-            if(fromNode.name==='conclusion'){
+            if (fromNode.name === 'conclusion') {
                 alert('Conclusion（結）から後ろに時系列を作ることはできません')
                 return;
             }
-
 
             console.log(tonNode.group);
             if (tonNode.group === 'event' && fromNode.group === 'state')
@@ -496,7 +493,7 @@ let trial_options = {
             callback(nodedata);
 
         },
-        editEdge:false
+        editEdge: false
     }
 };
 
@@ -591,7 +588,7 @@ const activateTemplate = () => {
                 let theme_conclusion = $('#theme_conclusion').val();
                 let num = event.target.value = $('#curve_select').find('> option:selected').val();
 
-                if(condition_theme===''||theme_conclusion==='') {
+                if (condition_theme === '' || theme_conclusion === '') {
                     alert('テーマを入力して下さい');
                     return;
                 }
@@ -604,7 +601,7 @@ const activateTemplate = () => {
                 plot_tree = new vis.Network(plot_container, plot, plot_options);
                 trial_map = new vis.Network(trial_container, trial_data, trial_options);
                 trial_map.setOptions({
-                    manipulation:false
+                    manipulation: false
                 });
 
                 trial_map.on('selectNode', function (params) {
@@ -635,15 +632,14 @@ const activateTemplate = () => {
                         give_qiestions.questions_and_methods.previous_event.display = true;
 
                         //もしも結ならそれ以降のイベントを発想させる質問を与えない。
-                        if('name' in item){
-                            if(item.name==='conclusion')
+                        if ('name' in item) {
+                            if (item.name === 'conclusion')
                                 give_qiestions.questions_and_methods.next_event.display = false;
                         }
 
-                        if (item.name==='introduction'||item.name==='development'||item.name==='turn'||item.name==='conclusion'){
+                        if (item.name === 'introduction' || item.name === 'development' || item.name === 'turn' || item.name === 'conclusion') {
                             state_editor.current_data = undefined;
-                        }
-                        else{
+                        } else {
                             //編集不可ではないノードを選択したときは、ノードの中身を変更できるようにする。
                             give_qiestions.questions_and_methods.when.display = true;
                             give_qiestions.questions_and_methods.where.display = true;
@@ -658,7 +654,7 @@ const activateTemplate = () => {
                 });
                 // トライアルでノード選択が解除された時に走るイベント（全部の選択肢と回答フォームを非表示に）
                 trial_map.on('click', function (params) {
-                    if(params.nodes.length===0) {
+                    if (params.nodes.length === 0) {
                         console.log('fire_no');
                         let questions = Object.keys(give_qiestions.questions_and_methods);
                         for (let i = 0; i < questions.length; i++) {
@@ -666,12 +662,11 @@ const activateTemplate = () => {
                         }
                         give_qiestions.showing_form = 'none';
                         //状態のオブジェクト変更機能もなしに
-                        state_editor.current_data=undefined;
+                        state_editor.current_data = undefined;
 
                     }
                     //params.event(params);
                 });
-
 
 
                 // プロット部のルートノードの更新
@@ -712,10 +707,10 @@ let setting_final_attribute = new Vue({
             value: ''
         }
     },
-    computed:{
-      inputted:function () {
-          return this.attribute!==''&&this.value!=='';
-      }
+    computed: {
+        inputted: function () {
+            return this.attribute !== '' && this.value !== '';
+        }
     },
     methods: {
         ok: function () {
@@ -744,9 +739,9 @@ let setting_final_state_character = new Vue({
             character: ''
         }
     },
-    computed:{
-        inputted:function () {
-            return this.character!=="";
+    computed: {
+        inputted: function () {
+            return this.character !== "";
         }
     },
     methods: {
@@ -831,8 +826,8 @@ let emotional_setting = new Vue({
 
         },
         del_character: function (id) {
-            if (id != 0)
-                this.characters.splice(this.characters.findIndex(item => item.id == id), 1);
+            if (id !== 0)
+                this.characters.splice(this.characters.findIndex(item => item.id === id), 1);
 
         },
         check_emotion: function () {
@@ -903,7 +898,7 @@ let emotional_setting = new Vue({
             let initial_event = new Event('テーマの条件部');
             initial_event.content = global_setting.theme_condition;
             initial_event.label = initial_event.generate_text();
-            initial_event.color='gold';
+            initial_event.color = 'gold';
 
 
             nodes_of_trial.add(initial_event);
@@ -914,7 +909,7 @@ let emotional_setting = new Vue({
             //最終状態ノードの追加
             this.display = false;
             give_qiestions.display = true;
-            state_editor.display=true;
+            state_editor.display = true;
             plot_extraction.display = true;
 
             trial_map.setOptions(trial_options);
@@ -929,135 +924,135 @@ let emotional_setting = new Vue({
 
 
 let edit_mode = new Vue({
-    el:"#edit_type",
-    data:function () {
-      return{
-          mode:false        //一応質問モードをONにする時にtrueで
-      }
+    el: "#edit_type",
+    data: function () {
+        return {
+            mode: false        //一応質問モードをONにする時にtrueで
+        }
     },
-    methods:{
-        chan:function () {
+    methods: {
+        chan: function () {
 
-            give_qiestions.mode=this.mode;
-            state_editor.mode=this.mode;
+            give_qiestions.mode = this.mode;
+            state_editor.mode = this.mode;
         }
     }
 });
 
 let state_editor = new Vue({
-    el:'#edit_state',
-    data:function (){
-        return{
-            display:false,
-            mode:false,
-            current_data:undefined
+    el: '#edit_state',
+    data: function () {
+        return {
+            display: false,
+            mode: false,
+            current_data: undefined
             // これはサンプルデータ
-                // objects:{
-                //         "主人公":{
-                //             "性別":"男",
-                //             "年齢":"大学生"
-                //         },
-                //     "heroin": {
-                //         "age": "teen",
-                //         "sex": "female"
-                //     }
-                // }
-         //selectedのときに状態なら入れるようにしてみた。どうなるかなぁ……
+            // objects:{
+            //         "主人公":{
+            //             "性別":"男",
+            //             "年齢":"大学生"
+            //         },
+            //     "heroin": {
+            //         "age": "teen",
+            //         "sex": "female"
+            //     }
+            // }
+            //selectedのときに状態なら入れるようにしてみた。どうなるかなぁ……
         }
     },
-    computed:{
-        time :{
-            get:function() {
+    computed: {
+        time: {
+            get: function () {
                 if (this.current_data.time === undefined) {
-                    return'';
+                    return '';
                 }
                 return this.current_data.time;
             },
-            set:function (item){
+            set: function (item) {
                 if (item === '')
-                    this.current_data.time=undefined;
+                    this.current_data.time = undefined;
                 else
-                    this.current_data.time=item;
+                    this.current_data.time = item;
             }
 
         },
-        place :{
-            get:function() {
+        place: {
+            get: function () {
                 if (this.current_data.place === undefined) {
-                    return'';
+                    return '';
                 }
                 return this.current_data.place;
             },
-            set:function (item) {
-                if(item==='')
-                    this.current_data.place=undefined;
+            set: function (item) {
+                if (item === '')
+                    this.current_data.place = undefined;
                 else
-                    this.current_data.place=item;
+                    this.current_data.place = item;
             }
 
         }
     },
 
-    methods:{
-        add_object:function () {
+    methods: {
+        add_object: function () {
             let obj_name = window.prompt('追加するオブジェクト名を入力して下さい')
-            if(obj_name===null)
+            if (obj_name === null)
                 return;
-            if(obj_name in this.current_data.objects){
+            if (obj_name in this.current_data.objects) {
                 alert('そのオブジェクトは既に存在します');
                 return;
             }
-            if(obj_name===''){
+            if (obj_name === '') {
                 alert('名前のないオブジェクトはつくれません');
                 return;
             }
 
             // this.current_data.objects[obj_name]={}
-            this.$set(this.current_data.objects,obj_name,{});
+            this.$set(this.current_data.objects, obj_name, {});
             this.update();
 
         },
-        del_object:function (obj) {
+        del_object: function (obj) {
             // delete this.current_data.objects[obj];
-            this.$delete(this.current_data.objects,obj);
+            this.$delete(this.current_data.objects, obj);
 
             this.update();
 
         },
-        add_attribute:function(obj) {
+        add_attribute: function (obj) {
 
             let attr_name = window.prompt('追加する属性を入力して下さい');
-            if(attr_name===null)
+            if (attr_name === null)
                 return;
-            if(attr_name in this.current_data.objects[obj]){
+            if (attr_name in this.current_data.objects[obj]) {
                 alert('その属性は既に存在します');
                 return;
             }
-            if(attr_name===''){
+            if (attr_name === '') {
                 alert('名前のない属性はつくれません');
                 return;
             }
 
             let val = window.prompt('属性値を入力して下さい');
-            if(attr_name===null)
+            if (attr_name === null)
                 return;
 
             // this.current_data.objects[obj][attr_name] = attr_name;
-            this.$set(this.current_data.objects[obj],attr_name,val);
+            this.$set(this.current_data.objects[obj], attr_name, val);
 
             this.update();
         },
-        del_attribute:function (obj,attr) {
+        del_attribute: function (obj, attr) {
             // delete this.current_data.objects[obj][attr];
 
-            this.$delete(this.current_data.objects[obj],[attr]);
+            this.$delete(this.current_data.objects[obj], [attr]);
             this.update();
         },
 
-        update:function () {
+        update: function () {
             //ノードの更新をどうにかする関数。たぶんここに入ってるcurrent_dataを用いてtiral_nodesをアップデートすれば行けるはず。たぶん。
             // this.current_data.label = this.current_data.generate_text();
-            this.$set(this.current_data,'label',this.current_data.generate_text());
+            this.$set(this.current_data, 'label', this.current_data.generate_text());
             nodes_of_trial.remove(this.current_data.id);
             nodes_of_trial.add(this.current_data);
 
@@ -1066,12 +1061,10 @@ let state_editor = new Vue({
             log_data.add_log("状態ノードを更新しました");
 
 
-
         }
     }
 
 });
-
 
 
 let give_qiestions = new Vue({
@@ -1079,7 +1072,7 @@ let give_qiestions = new Vue({
     data: function () {
         return {
             display: false,
-            mode:false,
+            mode: false,
             questions_and_methods: {
                 when: {
                     question: 'いつのこと？',
@@ -1274,7 +1267,7 @@ let plot_extraction = new Vue({
             current_route: 0,
             select_section: undefined,
             current_trial_nodes: undefined,
-            current_trial_edges:undefined,
+            current_trial_edges: undefined,
             switched_button_message: 'プロット抽出',
             display: false
         })
@@ -1285,7 +1278,7 @@ let plot_extraction = new Vue({
             if (this.extract_mode) {
                 this.extract_mode = false;
                 give_qiestions.display = true;
-                state_editor.display=true;
+                state_editor.display = true;
                 nodes_of_trial.update(this.current_trial_nodes.get());
                 edges_of_trial.update(this.current_trial_edges.get());
                 this.switched_button_message = 'プロット抽出モード';
@@ -1294,8 +1287,8 @@ let plot_extraction = new Vue({
                 // console.log(log_data);
 
                 //質問ボタンの非表示化と抽出関連の表示
-                give_qiestions.display=true;
-                state_editor.display=true;
+                give_qiestions.display = true;
+                state_editor.display = true;
 
                 //トライアル部のマニピュレをONに
                 trial_map.setOptions(trial_options);
@@ -1303,13 +1296,13 @@ let plot_extraction = new Vue({
                 return
             }
             //なにも選んでなければ跳ねる
-            if(this.select_section===undefined) {
+            if (this.select_section === undefined) {
                 return;
             }
 
             this.extract_mode = true;
             give_qiestions.display = false;
-            state_editor.display=false;
+            state_editor.display = false;
             this.switched_button_message = 'プロット抽出モード終わり'
             this.current_trial_nodes = new vis.DataSet(nodes_of_trial.get());
             this.current_trial_edges = new vis.DataSet(edges_of_trial.get());
@@ -1365,29 +1358,29 @@ let plot_extraction = new Vue({
                     start = undefined;
                     goal = intro[0];
                     com = "introまで抽出";
-                    goal_name='introduction';
-                    start_name=undefined;
+                    goal_name = 'introduction';
+                    start_name = undefined;
                     break;
                 case '1':
                     start = intro[0];
                     goal = develop[0];
                     com = "developmentまで抽出";
-                    goal_name= 'development';
-                    start_name='introduction';
+                    goal_name = 'development';
+                    start_name = 'introduction';
                     break;
                 case '2':
                     start = develop[0];
                     goal = turn[0];
                     com = "turnまで抽出";
-                    goal_name='turn';
-                    start_name='development';
+                    goal_name = 'turn';
+                    start_name = 'development';
                     break;
                 case '3':
                     start = turn[0];
                     goal = concl[0];
                     com = "conclusionまで抽出";
-                    goal_name='conclusion';
-                    start_name='turn';
+                    goal_name = 'conclusion';
+                    start_name = 'turn';
                     break;
             }
 
@@ -1413,13 +1406,13 @@ let plot_extraction = new Vue({
                         let node_content = nodes_of_trial.get(item.from);
 
                         //子供の候補が基本構造なら追加しない
-                        if('name' in node_content){
-                            if(node_content.name==="introduction"||node_content.name==="development"||node_content.name==="turn"||node_content.name==="conclusion")
-                                can_be_add=false;
+                        if ('name' in node_content) {
+                            if (node_content.name === "introduction" || node_content.name === "development" || node_content.name === "turn" || node_content.name === "conclusion")
+                                can_be_add = false;
                         }
 
                         //展開対象までに至った経路の中で子供の候補が出てなければ追加可能
-                        if(can_be_add===true){
+                        if (can_be_add === true) {
                             for (let checker = expand_target; checker !== 0; checker = edge_white_tree[checker].parent) {
                                 if (edge_white_tree[checker].node === item.from) {
                                     can_be_add = false;
@@ -1466,9 +1459,11 @@ let plot_extraction = new Vue({
                 while (expand_target !== edge_white_tree.length) {
                     let expand_target_node = nodes_of_trial.get(edge_white_tree[expand_target].node);
                     if ('name' in expand_target_node) {
-                        if (expand_target_node.name !== goal_name && expand_target_node.name !== start_name && expand_target_node.name!==''&& expand_target_node.type!=='event') {
-                            expand_target++;
-                            continue;
+                        if (expand_target_node.name !== undefined) {
+                            if (expand_target_node.name !== goal_name && expand_target_node.name !== start_name && expand_target_node.name !== '' && expand_target_node.type !== 'event') {
+                                expand_target++;
+                                continue;
+                            }
                         }
                     }
 
@@ -1511,18 +1506,17 @@ let plot_extraction = new Vue({
                     this.routes_ids.push(route);
                     console.log(nodes_of_trial.get(route));
                 });
-                give_qiestions.display=false;
-                state_editor.display=false;
+                give_qiestions.display = false;
+                state_editor.display = false;
                 log_data.add_log(com);
             }
 
 
-            if(this.routes_ids.length===0)
-            {
+            if (this.routes_ids.length === 0) {
                 alert('そんなルートはないよ');
                 this.extract_mode = false;
                 give_qiestions.display = true;
-                state_editor.display=true;
+                state_editor.display = true;
                 nodes_of_trial.update(this.current_trial_nodes.get());
                 edges_of_trial.update(this.current_trial_edges.get());
                 this.switched_button_message = 'プロット抽出モード';
@@ -1531,8 +1525,8 @@ let plot_extraction = new Vue({
                 // console.log(log_data);
 
                 //質問ボタンの非表示化と抽出関連の表示
-                give_qiestions.display=true;
-                state_editor.display=true;
+                give_qiestions.display = true;
+                state_editor.display = true;
 
                 //トライアル部のマニピュレをONに
                 trial_map.setOptions(trial_options);
@@ -1540,7 +1534,7 @@ let plot_extraction = new Vue({
                 return;
             }
 
-            this.current_route=0;
+            this.current_route = 0;
             this.route_preview();
             //データの用意
             // this.routes_ids.forEach(r =>{
@@ -1575,10 +1569,10 @@ let plot_extraction = new Vue({
             }
 
 
-            if(parent_node_id!==2)
+            if (parent_node_id !== 2)
                 added_nodes.shift();
 
-            if (nodes_of_plot.get(added_node_ids).length!==0){
+            if (nodes_of_plot.get(added_node_ids).length !== 0) {
                 log_data.add_log('プロット挿入失敗');
                 alert('既にプロットにあるイベントor状態を新たに追加できません');
                 return;
@@ -1613,8 +1607,8 @@ let plot_extraction = new Vue({
         /**
          * 部分プロットを削除する機能
          */
-        plot_delete: function (){
-            let parent_node_id=undefined;
+        plot_delete: function () {
+            let parent_node_id = undefined;
             switch (this.select_section) {
                 case '0':
                     parent_node_id = 2;
@@ -1632,10 +1626,11 @@ let plot_extraction = new Vue({
             }
 
             let deleted_edges = edges_of_plot.get({
-                filter:function (item) {
-                    return(item.from===parent_node_id);
-                }});
-            for(let i=0;i<deleted_edges.length;i++){
+                filter: function (item) {
+                    return (item.from === parent_node_id);
+                }
+            });
+            for (let i = 0; i < deleted_edges.length; i++) {
                 edges_of_plot.remove(deleted_edges[i].id);
                 nodes_of_plot.remove(deleted_edges[i].to);
             }
@@ -1650,9 +1645,9 @@ let plot_extraction = new Vue({
             let preview_route = this.routes_ids[this.current_route];
             let preview_nodes = this.current_trial_nodes.get(preview_route);
             let preview_edges = this.current_trial_edges.get({
-                filter:function (item) {
-                    for(let i=0;i<plot_extraction.routes_ids[plot_extraction.current_route].length-1;i++){
-                        if(item.from===plot_extraction.routes_ids[plot_extraction.current_route][i]&&item.to===plot_extraction.routes_ids[plot_extraction.current_route][i+1]){
+                filter: function (item) {
+                    for (let i = 0; i < plot_extraction.routes_ids[plot_extraction.current_route].length - 1; i++) {
+                        if (item.from === plot_extraction.routes_ids[plot_extraction.current_route][i] && item.to === plot_extraction.routes_ids[plot_extraction.current_route][i + 1]) {
                             return true
                         }
                     }
@@ -1688,11 +1683,11 @@ let plot_extraction = new Vue({
         /**
          * プロットの整合性をチェックする奴
          */
-        plot_check: function (){
+        plot_check: function () {
             plot_tree.storePositions();
             let nodes = nodes_of_plot.get({
-                filter:function (item){
-                     return(item.level===2);
+                filter: function (item) {
+                    return (item.level === 2);
                 }
             });
             //Yの座標でソート
@@ -1705,25 +1700,25 @@ let plot_extraction = new Vue({
             });
 
             //プロット部で上下に並んでいるノードのエッジがトライアル部に存在するかチェック
-            for(let i=0;i<nodes.length-1;i++){
+            for (let i = 0; i < nodes.length - 1; i++) {
                 let target_edge = edges_of_trial.get({
-                    filter:function (item) {
-                        return item.from===nodes[i].id&&item.from===nodes[i+1].id
+                    filter: function (item) {
+                        return item.from === nodes[i].id && item.from === nodes[i + 1].id
                     }
                 });
 
-                if(target_edge===null){
-                    trial_map.selectNodes([nodes[i].id,nodes[i+1].id])
+                if (target_edge === null) {
+                    trial_map.selectNodes([nodes[i].id, nodes[i + 1].id])
                     log_data.add_log('プロットチェックで矛盾検出');
                     alert('トライアル部で接続のないプロット上での繋がりが見つかりました。接続がない二つのノードがトライアル部で選択されています');
                     return;
                 }
                 let target_node = nodes_of_plot.get({
-                    filter:function (item) {
-                        return item.name==='テーマの条件部'
+                    filter: function (item) {
+                        return item.name === 'テーマの条件部'
                     }
                 });
-                if (target_node===null){
+                if (target_node === null) {
                     log_data.add_log('条件イベント不備');
                     alert('重要なイベントがプロットにありません');
                     return;
@@ -2009,7 +2004,7 @@ function log_save() {
     let a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     document.body.appendChild(a);
-    a.download='log_data.json';
+    a.download = 'log_data.json';
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(a.href);
