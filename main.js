@@ -1551,26 +1551,108 @@ let plot_extraction = new Vue({
             let added_nodes = this.current_trial_nodes.get(added_node_ids);
             let parent_node_id = undefined;
 
+            let before_node = [];
+            let after_node = [];
+
             //親となるノードを探索
             switch (this.select_section) {
                 case '0':
                     parent_node_id = 2;
+                    after_node = nodes_of_plot.get({
+                        filter: function (item) {
+                            return edges_of_plot.get({
+                                    filter: function (item2) {
+                                        return item2.from === 3 || item2.from === 4 || item2.from === 5
+                                        //起にノード入れるときは承転結の子ノードが全部afterに入る
+                                    }
+                                }
+                            ).includes(item.id)
+                        },
+                        order:"y"
+                    });
                     break;
                 case '1':
                     parent_node_id = 3;
+
+                    before_node = nodes_of_plot.get({
+                        filter: function (item) {
+                            return edges_of_plot.get({
+                                    filter: function (item2) {
+                                        return item2.from === 2
+                                        //承にノード入れるときは起の子ノードが全部beforeに入る
+                                    }
+                                }
+                            ).includes(item.id)
+                        },
+                        order:"y"
+                    });
+
+
+                    after_node = nodes_of_plot.get({
+                        filter: function (item) {
+                            return edges_of_plot.get({
+                                    filter: function (item2) {
+                                        return item2.from === 4 || item2.from === 5
+                                        //承にノード入れるときは転結の子ノードが全部afterに入る
+                                    }
+                                }
+                            ).includes(item.id)
+                        },
+                        order:"y"
+                    });
                     break;
                 case '2':
                     parent_node_id = 4;
+                    before_node = nodes_of_plot.get({
+                        filter: function (item) {
+                            return edges_of_plot.get({
+                                    filter: function (item2) {
+                                        return item2.from === 2　|| item2.from === 3
+                                        //転にノード入れるときは起承の子ノードが全部beforeに入る
+                                    }
+                                }
+                            ).includes(item.id)
+                        },
+                        order:"y"
+                    });
+
+
+                    after_node = nodes_of_plot.get({
+                        filter: function (item) {
+                            return edges_of_plot.get({
+                                    filter: function (item2) {
+                                        return item2.from === 5
+                                        //点にノード入れるときは結の子ノードが全部afterに入る
+                                    }
+                                }
+                            ).includes(item.id)
+                        },
+                        order:"y"
+                    });
 
                     break;
                 case '3':
                     parent_node_id = 5;
+                    before_node = nodes_of_plot.get({
+                        filter: function (item) {
+                            return edges_of_plot.get({
+                                    filter: function (item2) {
+                                        return item2.from === 2　|| item2.from === 3 || item2.from === 4
+                                        //結にノード入れるときは起承点の子ノードが全部beforeに入る
+                                    }
+                                }
+                            ).includes(item.id)
+                        },
+                        order:"y"
+                    });
                     break;
             }
 
 
-            if (parent_node_id !== 2)
+            if (parent_node_id !== 2){
                 added_nodes.shift();
+                added_node_ids.shift();
+            }
 
             if (nodes_of_plot.get(added_node_ids).length !== 0) {
                 log_data.add_log('プロット挿入失敗');
@@ -1579,17 +1661,44 @@ let plot_extraction = new Vue({
 
             }
 
-
-            for (let i = 0; i < added_nodes.length; i++) {
-                added_nodes[i].level = 2;
-                //ここであと、高さの調整が必要かも……
-            }
-
+            // とりあえずここで位置を保存しておく。
+            plot_tree.storePositions();
 
             //現在入ってるプロットを削除する
             this.plot_delete();
+
+            let y_value = 0;
+
+            for (let i=0;i<before_node.length;i++){
+                before_node[i].y = y_value;
+                y_value++;
+            }
+
+            // レベルと高さの調整
+            for (let i = 0; i < added_nodes.length; i++) {
+                added_nodes[i].level = 2;
+                added_nodes[i].y = y_value;
+                y_value++;
+                //ここであと、高さの調整が必要かも……
+                // let parent_height = parent_node_id-1;
+                // added_nodes[i].y=parent_height * 10 + i;
+                // //10ノードまでしか対応できないじゃんって気付いた。
+
+                // addnodesの分、他のノードの高さをオフセットすればおｋ？
+
+            }
+            for (let i=0;i<after_node.length;i++){
+                after_node[i].y = y_value;
+                y_value++;
+            }
+
+
+
+
             //ノードを突っ込む
+            nodes_of_plot.add(before_node);
             nodes_of_plot.add(added_nodes);
+            nodes_of_plot.add(after_node);
 
             //エッジを追加する
             let add_edges = [];
@@ -1954,14 +2063,6 @@ function emo_to_jpname(eng) {
         return (all_emotions.dyads[eng].jp_name);
 }
 
-// 適当にプロット部にぶち込む感じの奴作ってみる？
-function plot_insert() {
-
-}
-
-function plot_path_find() {
-
-}
 
 
 //CSV読み込む奴
