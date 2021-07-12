@@ -167,25 +167,29 @@ let nodes_of_plot = new vis.DataSet([{
         id: 2,
         label: 'Introduction',
         level: 1,
-        type: 'Basic_structure'
+        type: 'Basic_structure',
+        y:1
     },
     {
         id: 3,
         label: 'Development',
         level: 1,
-        type: 'Basic_structure'
+        type: 'Basic_structure',
+        y:2
     },
     {
         id: 4,
         label: 'Turn',
         level: 1,
-        type: 'Basic_structure'
+        type: 'Basic_structure',
+        y:3
     },
     {
         id: 5,
         label: 'Conclusion',
         level: 1,
-        type: 'Basic_structure'
+        type: 'Basic_structure',
+        y:4
     }
 ]);
 
