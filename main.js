@@ -161,7 +161,8 @@ let nodes_of_plot = new vis.DataSet([{
     id: 1,
     label: 'Theme',
     level: 0,
-    type: 'theme'
+    type: 'theme',
+    y:25
 },
     {
         id: 2,
@@ -175,21 +176,21 @@ let nodes_of_plot = new vis.DataSet([{
         label: 'Development',
         level: 1,
         type: 'Basic_structure',
-        y:2
+        y:20
     },
     {
         id: 4,
         label: 'Turn',
         level: 1,
         type: 'Basic_structure',
-        y:3
+        y:30
     },
     {
         id: 5,
         label: 'Conclusion',
         level: 1,
         type: 'Basic_structure',
-        y:4
+        y:40
     }
 ]);
 
