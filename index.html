@@ -10,6 +10,15 @@
     <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
     <link href="https://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css" rel="stylesheet">
+
+<!--    ページ遷移寺に警告出す用の奴-->
+    <script>
+        $(window).ready(function () {
+            $(window).on('beforeunload', function () {
+                return '変更が保存されない可能性があります！';
+            });
+        });
+    </script>
 </head>
 
 <body>
@@ -130,8 +139,9 @@
 
     </div>
 
-    質問モード<input type="checkbox" id="edit_type" v-model="mode" @change="chan">
-
+    <label class="edit_type" v-if="display"> 質問モード
+        <input type="checkbox" class="edit_type" v-model="mode" @change="chan">
+    </label>
 
     <div id="edit_state" v-if="display&&!mode&&!(current_data===undefined)">
         <!--質問によらず状態を形成するところ-->

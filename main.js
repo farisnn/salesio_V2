@@ -916,6 +916,7 @@ let emotional_setting = new Vue({
             give_qiestions.display = true;
             state_editor.display = true;
             plot_extraction.display = true;
+            edit_mode.display=true;
 
             trial_map.setOptions(trial_options);
 
@@ -929,10 +930,11 @@ let emotional_setting = new Vue({
 
 
 let edit_mode = new Vue({
-    el: "#edit_type",
+    el: ".edit_type",
     data: function () {
         return {
-            mode: false        //一応質問モードをONにする時にtrueで
+            mode: false,//一応質問モードをONにする時にtrueで
+            display:false
         }
     },
     methods: {
@@ -978,6 +980,7 @@ let state_editor = new Vue({
                     this.current_data.time = undefined;
                 else
                     this.current_data.time = item;
+                log_data.add_log("状態ノードを更新しました");
             }
 
         },
@@ -993,6 +996,7 @@ let state_editor = new Vue({
                     this.current_data.place = undefined;
                 else
                     this.current_data.place = item;
+                log_data.add_log("状態ノードを更新しました");
             }
 
         }
@@ -1057,7 +1061,8 @@ let state_editor = new Vue({
         update: function () {
             //ノードの更新をどうにかする関数。たぶんここに入ってるcurrent_dataを用いてtiral_nodesをアップデートすれば行けるはず。たぶん。
             // this.current_data.label = this.current_data.generate_text();
-            this.$set(this.current_data, 'label', this.current_data.generate_text());
+            // this.$set(this.current_data, 'label', this.current_data.generate_text());
+            this.$set(this.current_data, 'label', State.generate_texts(this.current_data));
             nodes_of_trial.remove(this.current_data.id);
             nodes_of_trial.add(this.current_data);
 
@@ -1518,7 +1523,7 @@ let plot_extraction = new Vue({
 
 
             if (this.routes_ids.length === 0) {
-                alert('そんなルートはないよ');
+                alert('挿入できる系列が見つかりませんでした');
                 this.extract_mode = false;
                 give_qiestions.display = true;
                 state_editor.display = true;
@@ -1526,7 +1531,7 @@ let plot_extraction = new Vue({
                 edges_of_trial.update(this.current_trial_edges.get());
                 this.switched_button_message = 'プロット抽出モード';
                 //ログデータの追加
-                log_data.add_log("プロット抽出モードが終了");
+                log_data.add_log("プロット抽出モードが終了（抽出不能）");
                 // console.log(log_data);
 
                 //質問ボタンの非表示化と抽出関連の表示
@@ -1660,7 +1665,7 @@ let plot_extraction = new Vue({
             }
 
             if (nodes_of_plot.get(added_node_ids).length !== 0) {
-                log_data.add_log('プロット挿入失敗');
+                log_data.add_log('プロット挿入失敗（既出ノード挿入）');
                 alert('既にプロットにあるイベントor状態を新たに追加できません');
                 return;
 
