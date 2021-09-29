@@ -250,6 +250,9 @@ class Log {
         added_log.characters_setting = emotional_setting.characters;
 
         //マップデータの格納
+        plot_tree.storePositions();
+        trial_map.storePositions();
+
         added_log.plot_nodes = nodes_of_plot.get();
         added_log.plot_edges = edges_of_plot.get();
 
@@ -1238,6 +1241,12 @@ let give_qiestions = new Vue({
             }
             this.inputs_data.single = '';
             this.inputs_data.triple = ['', '', ''];
+            this.showing_form='none';
+
+            let questions = Object.keys(this.questions_and_methods);
+            for (let i = 0; i < questions.length; i++) {
+                this.questions_and_methods[questions[i]].display = false;
+            }
 
             //ログデータの追加
             log_data.add_log("質問に回答しました")
@@ -1829,7 +1838,7 @@ let plot_extraction = new Vue({
                 if (target_edge === null) {
                     trial_map.selectNodes([nodes[i].id, nodes[i + 1].id])
                     log_data.add_log('プロットチェックで矛盾検出');
-                    alert('トライアル部で接続のないプロット上での繋がりが見つかりました。接続がない二つのノードがトライアル部で選択されています');
+                    alert('トライアル部で接続のない物語構造上での並びが見つかりました。接続がない二つのノードがトライアル部で選択されています');
                     return;
                 }
                 let target_node = nodes_of_plot.get({
@@ -1839,7 +1848,7 @@ let plot_extraction = new Vue({
                 });
                 if (target_node === null) {
                     log_data.add_log('条件イベント不備');
-                    alert('重要なイベントがプロットにありません');
+                    alert('重要なイベント（テーマの原因となるもの）が物語構造にありません');
                     return;
                 }
 
@@ -1916,7 +1925,7 @@ function generate_emotion_feedback() {
         let check_emotions = [characters_data[i].introduction, characters_data[i].development, characters_data[i].turn, characters_data[i].conclusion]
 
         for (let j = 0; j < 3; j++) {
-            if (!characters_data[i].name === emotional_setting.empathized)
+            if (characters_data[i].name !== emotional_setting.empathized)
                 break;
 
             let before = check_emotions[j];
