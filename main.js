@@ -440,36 +440,57 @@ let trial_options = {
             }
 
             console.log(tonNode.group);
-            if (tonNode.group === 'event' && fromNode.group === 'state')
+            if (tonNode.group === 'event' && fromNode.group === 'state'){
                 callback(edgedata);
-            if (tonNode.group === 'state' && fromNode.group === 'event')
+                log_data.add_log('エッジ追加');
+            }
+            if (tonNode.group === 'state' && fromNode.group === 'event'){
                 callback(edgedata);
-
+                log_data.add_log('エッジ追加');
+            }
 
         },
         addNode: function (nodedata, callback) {
 
             let new_node
-            // if(document.getElementById('add_node').showModal()=='event'){
-            //     new_node = new Event(undefined);
-            // }
-            // else
-            // {
-            //     new_node = new State(undefined);
-            // }
-            if (confirm('イベントを作成する場合「はい」を状態を作成する場合は「キャンセル」をクリックしてください')) {
-                new_node = new Event(undefined)
-                document.getElementById('new_event').showModal();
-                return;
-            } else {
+
+            let dialog = document.getElementById('Event_or_state');
+            let event_button = document.getElementById('selecting_event');
+            let state_button = document.getElementById('selecting_state');
+
+            dialog.showModal();
+            event_button.addEventListener('click',function (e){
+                    dialog.close();
+                    document.getElementById('new_event').showModal();
+            });
+            state_button.addEventListener('click',function (e){
                 new_node = new State(undefined);
-                // document.getElementById('new_state').showModal();
-            }
-            new_node.id = nodedata.id;
-            new_node.x = nodedata.x;
-            new_node.y = nodedata.y;
-            new_node.label = new_node.generate_text();
-            callback(new_node);
+                new_node.id = nodedata.id;
+                new_node.x = nodedata.x;
+                new_node.y = nodedata.y;
+                new_node.label = new_node.generate_text();
+                dialog.close();
+                callback(new_node);
+                log_data.add_log('状態追加');
+            });
+
+            //
+            //
+            // if (confirm('イベントを作成する場合「はい」を状態を作成する場合は「キャンセル」をクリックしてください')) {
+            //     new_node = new Event(undefined)
+            //     document.getElementById('new_event').showModal();
+            //     return;
+            // } else {
+            //     new_node = new State(undefined);
+            //     // document.getElementById('new_state').showModal();
+            // }
+
+            //
+            // new_node.id = nodedata.id;
+            // new_node.x = nodedata.x;
+            // new_node.y = nodedata.y;
+            // new_node.label = new_node.generate_text();
+            // callback(new_node);
 
         },
         deleteNode: function (nodedata, callback) {
@@ -945,6 +966,12 @@ let edit_mode = new Vue({
 
             give_qiestions.mode = this.mode;
             state_editor.mode = this.mode;
+            if(this.mode){
+                log_data.add_log('質問モードになりました');
+            }
+            else {
+                log_data.add_log('質問モード解除');
+            }
         }
     }
 });
@@ -983,7 +1010,7 @@ let state_editor = new Vue({
                     this.current_data.time = undefined;
                 else
                     this.current_data.time = item;
-                log_data.add_log("状態ノードを更新しました");
+                log_data.add_log("状態ノードの時間を更新しました");
             }
 
         },
@@ -999,7 +1026,7 @@ let state_editor = new Vue({
                     this.current_data.place = undefined;
                 else
                     this.current_data.place = item;
-                log_data.add_log("状態ノードを更新しました");
+                log_data.add_log("状態ノードの場所を更新しました");
             }
 
         }
@@ -1271,6 +1298,7 @@ let add_new_event = new Vue({
             nodes_of_trial.add(add_node);
             document.getElementById('new_event').close();
             this.content = '';
+            log_data.add_log('イベント追加');
         }
     }
 
@@ -1540,7 +1568,7 @@ let plot_extraction = new Vue({
                 edges_of_trial.update(this.current_trial_edges.get());
                 this.switched_button_message = 'プロット抽出モード';
                 //ログデータの追加
-                log_data.add_log("プロット抽出モードが終了（抽出不能）");
+                log_data.add_log("プロット抽出モードが終了（抽出不能）"+com);
                 // console.log(log_data);
 
                 //質問ボタンの非表示化と抽出関連の表示
@@ -2045,8 +2073,10 @@ function generate_emotion_feedback() {
     }
     if (have_problem) {
         alert(feedback_message);
+        log_data.add_log('感情チェックで矛盾あり'+feedback_message);
     } else {
         alert('感情設定に矛盾は見つかりませんでした');
+        log_data.add_log('感情チェックで矛盾無し');
     }
     // if(have_problem)
     //     // toastr.warning('診断結果をチェックしてみましょう');
