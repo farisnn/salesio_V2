@@ -170,48 +170,48 @@
         </template>
         <div id="when" v-if="showing_form=='when'">
             {{questions_and_methods.when.question}}<br>
-            <input type="text" v-model="inputs_data.single">のこと
+            <input type="text" v-model="inputs_data.single" placeholder="○時・ある夏の日・翌日etc.">のこと
         </div>
         <div id="where" v-if="showing_form=='where'">
             {{questions_and_methods.where.question}}
-            <input type="text" v-model="inputs_data.single">のこと
+            <input type="text" v-model="inputs_data.single" placeholder="学校・地球・etc.">のこと
         </div>
         <div id="other_chara" v-if="showing_form=='other_chara'">
             {{questions_and_methods.other_chara.question}}
-            <input type="text" v-model="inputs_data.single">
+            <input type="text" v-model="inputs_data.single" placeholder="母親・友達・○○さん・etc.">
         </div>
         <div id="other_onject" v-if="showing_form=='other_onject'">
             {{questions_and_methods.other_onject.question}}
-            <input type="text" v-model="inputs_data.single">
+            <input type="text" v-model="inputs_data.single" placeholder="車・石像・etc.">
 
         </div>
         <div id="what_state" v-if="showing_form=='what_state'">
             {{questions_and_methods.what_state.question}}
-            <input type="text" v-model="inputs_data.triple[0]">の
-            <input type="text" v-model="inputs_data.triple[1]">が
-            <input type="text" v-model="inputs_data.triple[2]">である。
+            <input type="text" v-model="inputs_data.triple[0]" placeholder="友達A">の
+            <input type="text" v-model="inputs_data.triple[1]" placeholder="所持金">が
+            <input type="text" v-model="inputs_data.triple[2]" placeholder="豊富">である。
 
         </div>
         <div id="then_what" v-if="showing_form=='then_what'">
             {{questions_and_methods.then_what.question}}
-            <input type="text" v-model="inputs_data.triple[0]">の
-            <input type="text" v-model="inputs_data.triple[1]">が
-            <input type="text" v-model="inputs_data.triple[2]">になる。
+            <input type="text" v-model="inputs_data.triple[0]" placeholder="友達A">の
+            <input type="text" v-model="inputs_data.triple[1]" placeholder="所持金">が
+            <input type="text" v-model="inputs_data.triple[2]" placeholder="豊富">になる。
         </div>
         <div id="why_previous" v-if="showing_form=='why_previous'">
             {{questions_and_methods.why_previous.question}}
-            <input type="text" v-model="inputs_data.triple[0]">の
-            <input type="text" v-model="inputs_data.triple[1]">が
-            <input type="text" v-model="inputs_data.triple[2]">になる。
+            <input type="text" v-model="inputs_data.triple[0]" placeholder="友達A">の
+            <input type="text" v-model="inputs_data.triple[1]" placeholder="所持金">が
+            <input type="text" v-model="inputs_data.triple[2]" placeholder="豊富">であった。
         </div>
         <div id="next_event" v-if="showing_form=='next_event'">
             {{questions_and_methods.next_event.question}}
-            <input type="text" v-model="inputs_data.single">
+            <input type="text" v-model="inputs_data.single" placeholder="学校に行く・戦う・○○をする・etc.">
 
         </div>
         <div id="previous_event" v-if="showing_form=='previous_event'">
             {{questions_and_methods.previous_event.question}}
-            <input type="text" v-model="inputs_data.single">
+            <input type="text" v-model="inputs_data.single" placeholder="学校に行く・戦う・○○をする・etc.">
 
         </div>
         <div>
