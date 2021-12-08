@@ -1268,6 +1268,11 @@ let give_qiestions = new Vue({
             }
             this.inputs_data.single = '';
             this.inputs_data.triple = ['', '', ''];
+
+            //ログデータの追加
+            log_data.add_log("質問に回答しました("+this.showing_form+")")
+            // console.log(log_data);
+
             this.showing_form='none';
 
             let questions = Object.keys(this.questions_and_methods);
@@ -1275,9 +1280,7 @@ let give_qiestions = new Vue({
                 this.questions_and_methods[questions[i]].display = false;
             }
 
-            //ログデータの追加
-            log_data.add_log("質問に回答しました")
-            // console.log(log_data);
+
         },
     }
 });
